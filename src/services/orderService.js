@@ -1,6 +1,7 @@
 import axios from 'axios'
+import { API_BASE } from '../config'
 
-const API_URL = 'https://abuja-store-backend.onrender.com/api/orders'
+const API_URL = `${API_BASE}/api/orders`
 
 const authHeader = (token) => ({
   headers: { Authorization: `Bearer ${token}` },

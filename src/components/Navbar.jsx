@@ -5,6 +5,7 @@ import logo from '../assets/img/logo.png'
 import yl from '../assets/img/yl_png_logo.avif'
 import { useState, useEffect } from 'react'
 import { getCategories } from '../services/categoryService'
+import { getLogo } from '../services/logoService'
 import {
   Bars3Icon,
   XMarkIcon,
@@ -43,6 +44,21 @@ function Navbar() {
       setSearchQuery('')
     }
   }
+
+  const [logo, setLogo] = useState(null)
+
+  useEffect(() => {
+    const loadLogo = async () => {
+      try {
+        const data = await getLogo()
+        setLogo(data)
+      } catch (error) {
+        console.error('Could not load store logo:', error.message)
+      }
+    }
+
+    loadLogo()
+  }, [])
 
   const isHomePage = location.pathname === '/'
   const showTransparent = isHomePage && !isScrolled
@@ -124,7 +140,11 @@ function Navbar() {
 
         <div className="flex justify-center">
           <Link to="/" className="text-xl font-bold text-blue-600">
-            <img src={yl} alt="Logo" className="h-8" />
+            <img
+              src={logo?.imageUrl || yl}
+              alt={logo?.altText || 'Abuja Store Logo'}
+              className="h-8 w-auto object-contain"
+            />
           </Link>
         </div>
 
@@ -215,9 +235,11 @@ function Navbar() {
           <Bars3Icon className={`h-6 w-6 ${showTransparent ? 'text-white' : 'text-gray-900'}`} />
         </button>
 
-        <Link to="/" className="text-xl font-bold text-blue-600">
-          <img src={yl} alt="Logo" className="h-7" />
-        </Link>
+        <img
+          src={logo?.imageUrl || yl}
+          alt={logo?.altText || 'Abuja Store Logo'}
+          className="h-6 w-auto object-contain"
+        />
 
         <div className="flex items-center gap-4">
           <button className={`p-1 ${textColor}`}>

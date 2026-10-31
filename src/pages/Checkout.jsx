@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
+import { useSettings } from '../hooks/useSettings'
 import { createOrder } from '../services/orderService'
 import { initializePayment } from '../services/paymentService'
 import { QuestionMarkCircleIcon, ShoppingBagIcon, BuildingStorefrontIcon, TruckIcon } from '@heroicons/react/24/outline'
@@ -9,6 +10,7 @@ import { QuestionMarkCircleIcon, ShoppingBagIcon, BuildingStorefrontIcon, TruckI
 function Checkout() {
   const { cartItems } = useCart()
   const { user } = useAuth()
+  const { settings } = useSettings()
   const navigate = useNavigate()
 
   // Delivery Method State
@@ -43,12 +45,18 @@ function Checkout() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  // Calculation Constants (Shipping is free on Pickup)
-  const baseShippingCost = 3500
-  const shippingCost = deliveryMethod === 'pickup' ? 0 : baseShippingCost
-  const estimatedTax = 7500
+  // Pricing. These mirror the rules the server applies when the order is placed
+  // (the server recalculates, so this is only what the customer is shown).
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
   const totalItemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0)
+
+  const pickupAvailable = settings.pickup.enabled
+  const isPickup = deliveryMethod === 'pickup'
+  const freeThreshold = settings.shipping.freeShippingThreshold
+  const qualifiesForFree = freeThreshold > 0 && subtotal >= freeThreshold
+  const shippingCost = isPickup || qualifiesForFree ? 0 : settings.shipping.flatRate
+  const taxRate = settings.tax.rate
+  const estimatedTax = Math.round((subtotal * taxRate) / 100)
   const finalTotal = subtotal + shippingCost + estimatedTax
 
   if (!user) {
@@ -73,6 +81,8 @@ function Checkout() {
     setLoading(true)
 
     try {
+      // Totals are deliberately not sent: the server works them out from the
+      // store settings so the amount charged can't be changed from the browser.
       const orderData = {
         items: cartItems.map((item) => ({
           product: item._id,
@@ -83,33 +93,28 @@ function Checkout() {
           quantity: item.quantity,
         })),
         deliveryMethod,
-        shippingAddress:
-          deliveryMethod === 'ship'
-            ? {
-                firstName,
-                lastName,
-                address,
-                apartment,
-                city,
-                state,
-                postalCode,
-                phone,
-              }
-            : {
-                method: 'Store Pickup',
-                location: 'Main Retail Store Branch',
-                phone,
-              },
+        shippingAddress: isPickup
+          ? {
+              pickupType: 'Store Pickup',
+              location: settings.pickup.name,
+              phone,
+            }
+          : {
+              firstName,
+              lastName,
+              address,
+              apartment,
+              city,
+              state,
+              postalCode,
+              phone,
+            },
         billingAddress:
           billingAddressType === 'same'
-            ? deliveryMethod === 'ship'
-              ? { firstName, lastName, address, apartment, city, state, postalCode }
-              : 'Same as pickup'
+            ? isPickup
+              ? 'Same as pickup'
+              : { firstName, lastName, address, apartment, city, state, postalCode }
             : billingAddress,
-        subtotal,
-        shippingCost,
-        estimatedTax,
-        totalPrice: finalTotal,
       }
 
       const order = await createOrder(orderData, user.token)
@@ -130,7 +135,7 @@ function Checkout() {
         <div className="flex-1 px-4 sm:px-8 lg:px-16 pt-8 pb-16 lg:max-w-2xl">
           <div className="flex items-center justify-between mb-8">
             <h1 className="text-xl font-bold tracking-tight text-gray-900">
-              {/* Your Store Name */}
+              {settings.storeName}
             </h1>
             <ShoppingBagIcon className="w-6 h-6 text-blue-600 lg:hidden" />
           </div>
@@ -168,7 +173,11 @@ function Checkout() {
             {/* Delivery Method Toggle Tabs */}
             <div>
               <h2 className="text-lg font-bold text-gray-900 mb-3">Delivery method</h2>
-              <div className="grid grid-cols-2 gap-3 p-1 bg-gray-100 rounded-xl border border-gray-200">
+              <div
+                className={`grid gap-3 p-1 bg-gray-100 rounded-xl border border-gray-200 ${
+                  pickupAvailable ? 'grid-cols-2' : 'grid-cols-1'
+                }`}
+              >
                 <button
                   type="button"
                   onClick={() => setDeliveryMethod('ship')}
@@ -181,18 +190,20 @@ function Checkout() {
                   <TruckIcon className="w-4 h-4" />
                   Ship
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setDeliveryMethod('pickup')}
-                  className={`flex items-center justify-center gap-2 py-3 rounded-lg text-xs sm:text-sm font-semibold transition ${
-                    deliveryMethod === 'pickup'
-                      ? 'bg-white shadow-sm text-gray-900 border border-gray-200'
-                      : 'text-gray-500 hover:text-gray-800'
-                  }`}
-                >
-                  <BuildingStorefrontIcon className="w-4 h-4" />
-                  Pick up
-                </button>
+                {pickupAvailable && (
+                  <button
+                    type="button"
+                    onClick={() => setDeliveryMethod('pickup')}
+                    className={`flex items-center justify-center gap-2 py-3 rounded-lg text-xs sm:text-sm font-semibold transition ${
+                      deliveryMethod === 'pickup'
+                        ? 'bg-white shadow-sm text-gray-900 border border-gray-200'
+                        : 'text-gray-500 hover:text-gray-800'
+                    }`}
+                  >
+                    <BuildingStorefrontIcon className="w-4 h-4" />
+                    Pick up
+                  </button>
+                )}
               </div>
             </div>
 
@@ -308,14 +319,18 @@ function Checkout() {
                 <div className="border border-gray-300 bg-gray-50 rounded-xl p-4 space-y-2">
                   <div className="flex justify-between items-start">
                     <div>
-                      <p className="text-sm font-bold text-gray-900">Main Retail Store</p>
-                      <p className="text-xs text-gray-600 mt-0.5">123 Business Avenue, Suite 4, Central Area</p>
+                      <p className="text-sm font-bold text-gray-900">{settings.pickup.name}</p>
+                      {settings.pickup.address && (
+                        <p className="text-xs text-gray-600 mt-0.5">{settings.pickup.address}</p>
+                      )}
                     </div>
                     <span className="text-[11px] font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
                       Free
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500">Usually ready in 2 to 4 hours</p>
+                  {settings.pickup.readyTime && (
+                    <p className="text-xs text-gray-500">{settings.pickup.readyTime}</p>
+                  )}
                 </div>
 
                 <div className="mt-4">
@@ -340,8 +355,15 @@ function Checkout() {
                 <h2 className="text-lg font-bold text-gray-900 mb-3">Shipping method</h2>
                 <div className="border-2 border-blue-600 bg-blue-50/20 rounded-xl p-4 flex justify-between items-center text-sm">
                   <span className="font-semibold text-gray-900">Standard Delivery</span>
-                  <span className="font-bold text-gray-900">₦{shippingCost.toLocaleString()}</span>
+                  <span className="font-bold text-gray-900">
+                    {shippingCost === 0 ? 'Free' : `₦${shippingCost.toLocaleString()}`}
+                  </span>
                 </div>
+                {freeThreshold > 0 && !qualifiesForFree && (
+                  <p className="text-xs text-gray-500 mt-2">
+                    Add ₦{(freeThreshold - subtotal).toLocaleString()} more for free delivery.
+                  </p>
+                )}
               </div>
             )}
 
@@ -538,15 +560,18 @@ function Checkout() {
                   Shipping <QuestionMarkCircleIcon className="w-4 h-4 text-gray-400" />
                 </span>
                 <span className="font-semibold text-gray-900">
-                  {deliveryMethod === 'pickup' ? 'Free' : `₦${shippingCost.toLocaleString()}`}
+                  {shippingCost === 0 ? 'Free' : `₦${shippingCost.toLocaleString()}`}
                 </span>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="flex items-center gap-1">
-                  Estimated taxes <QuestionMarkCircleIcon className="w-4 h-4 text-gray-400" />
-                </span>
-                <span className="font-semibold text-gray-900">₦{estimatedTax.toLocaleString()}</span>
-              </div>
+              {taxRate > 0 && (
+                <div className="flex justify-between items-center">
+                  <span className="flex items-center gap-1">
+                    {settings.tax.label || 'Tax'} ({taxRate}%){' '}
+                    <QuestionMarkCircleIcon className="w-4 h-4 text-gray-400" />
+                  </span>
+                  <span className="font-semibold text-gray-900">₦{estimatedTax.toLocaleString()}</span>
+                </div>
+              )}
             </div>
 
             {/* Total Row */}

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
 import { RiInstagramLine, RiTwitterXLine, RiTiktokLine } from 'react-icons/ri'
+import { useSettings } from '../hooks/useSettings'
 
 const resources = [
   { label: 'FAQ', to: '/faq' },
@@ -15,35 +16,51 @@ const support = [
   { label: 'Contact Us', to: '/contact' },
 ]
 
-const socials = [
-  { label: 'Instagram', href: 'https://instagram.com', Icon: RiInstagramLine },
-  { label: 'X', href: 'https://x.com', Icon: RiTwitterXLine },
-  { label: 'TikTok', href: 'https://tiktok.com', Icon: RiTiktokLine },
-]
+const socialIcons = {
+  instagram: { label: 'Instagram', Icon: RiInstagramLine },
+  x: { label: 'X', Icon: RiTwitterXLine },
+  tiktok: { label: 'TikTok', Icon: RiTiktokLine },
+}
+
+const withProtocol = (url) => (/^https?:\/\//.test(url) ? url : `https://${url}`)
 
 function Footer() {
+  const { settings } = useSettings()
+  const { address, social, contactEmail, contactPhone, storeName } = settings
+
+  // Only show social icons that have a link filled in
+  const socials = Object.entries(socialIcons)
+    .filter(([key]) => social[key])
+    .map(([key, value]) => ({ key, href: withProtocol(social[key]), ...value }))
+
+  const cityLine = [address.city, address.state].filter(Boolean).join(', ')
+  const addressLines = [address.line1, cityLine, address.country].filter(Boolean)
+
   return (
     <footer className="bg-[#1f1f1f] text-white">
       <div className="mx-auto max-w-[1400px] px-6 py-12 md:px-12 md:py-16">
-        {/* Columns */}
         <div className="grid grid-cols-2 gap-x-6 gap-y-10 md:grid-cols-4 md:gap-x-10">
           {/* Socials */}
           <div className="col-span-2 md:col-span-1 md:pr-10">
             <h3 className="mb-5 text-base font-bold">SOCIALS</h3>
-            <div className="flex items-center gap-4">
-              {socials.map(({ label, href, Icon }) => (
-                <a
-                  key={label}
-                  href={href}
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label={label}
-                  className="text-gray-300 transition hover:text-white"
-                >
-                  <Icon className="h-5 w-5" />
-                </a>
-              ))}
-            </div>
+            {socials.length > 0 ? (
+              <div className="flex items-center gap-4">
+                {socials.map(({ key, label, href, Icon }) => (
+                  <a
+                    key={key}
+                    href={href}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={label}
+                    className="text-gray-300 transition hover:text-white"
+                  >
+                    <Icon className="h-5 w-5" />
+                  </a>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500">Follow us soon</p>
+            )}
           </div>
 
           {/* Resources */}
@@ -71,21 +88,37 @@ function Footer() {
                   </Link>
                 </li>
               ))}
+              {contactEmail && (
+                <li>
+                  <a href={`mailto:${contactEmail}`} className="text-base hover:text-gray-300 break-all">
+                    {contactEmail}
+                  </a>
+                </li>
+              )}
+              {contactPhone && (
+                <li>
+                  <a href={`tel:${contactPhone.replace(/\s/g, '')}`} className="text-base hover:text-gray-300">
+                    {contactPhone}
+                  </a>
+                </li>
+              )}
             </ul>
           </div>
 
           {/* Store address */}
           <div className="col-span-2 md:col-span-1">
             <h3 className="mb-5 text-base font-bold">STORE ADDRESS</h3>
-            <address className="text-base not-italic leading-8">
-              Admirlaty Mall
-              <br />
-              Lekki Phase 1, 2nd Floor,
-              <br />
-              Lagos, Lagos State
-              <br />
-              Nigeria
-            </address>
+            {addressLines.length > 0 ? (
+              <address className="text-base not-italic leading-8">
+                {addressLines.map((line) => (
+                  <span key={line} className="block">
+                    {line}
+                  </span>
+                ))}
+              </address>
+            ) : (
+              <p className="text-sm text-gray-500">Address coming soon</p>
+            )}
           </div>
         </div>
 
@@ -105,7 +138,7 @@ function Footer() {
           </button>
 
           <p className="text-sm text-gray-400">
-            © {new Date().getFullYear()} Your Store Name. All rights reserved.
+            © {new Date().getFullYear()} {storeName}. All rights reserved.
           </p>
         </div>
       </div>

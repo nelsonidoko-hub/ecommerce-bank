@@ -3,10 +3,12 @@ import Navbar from './Navbar'
 import Cart from '../pages/Cart'
 import Footer from './Footer'
 import WhatsAppWidget from './WhatsAppWidget'
+import AnnouncementBar from './AnnouncementBar'
 
 function PublicLayout() {
   return (
     <div>
+      <AnnouncementBar />
       <Navbar />
       <Cart />
       <WhatsAppWidget />

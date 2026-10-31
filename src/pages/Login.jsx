@@ -1,3 +1,4 @@
+
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -14,8 +15,13 @@ function Login() {
     setError('')
 
     try {
-      await login(email, password)
-      navigate('/')
+      const data = await login(email, password)
+
+      if (data.role === 'admin') {
+        navigate('/admin', { replace: true })
+      } else {
+        navigate('/', { replace: true })
+      }
     } catch (err) {
       setError('Invalid email or password')
     }
@@ -53,7 +59,11 @@ function Login() {
           Login
         </button>
       </form>
-      <Link to="/forgot-password" className="text-sm text-blue-600 underline self-end -mt-2">
+
+      <Link
+        to="/forgot-password"
+        className="text-sm text-blue-600 underline self-end -mt-2"
+      >
         Forgot password?
       </Link>
 

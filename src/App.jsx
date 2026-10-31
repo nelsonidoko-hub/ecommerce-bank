@@ -20,6 +20,9 @@ import SearchResults from './pages/SearchResults'
 import Shop from './pages/Shop'
 import MyOrders from './pages/MyOrders'
 import OrderDetail from './pages/OrderDetail'
+import AdminLogo from './pages/admin/AdminLogo'
+import AdminHero from './pages/admin/AdminHero'
+import AdminSettings from './pages/admin/AdminSettings'
 
 function App() {
   return (
@@ -37,6 +40,8 @@ function App() {
         <Route path="/shop" element={<Shop />} />
         <Route path="/orders" element={<MyOrders />} />
         <Route path="/orders/:id" element={<OrderDetail />} />
+
+        
       </Route>
 
       {/* Admin — AdminLayout provides its own sidebar, no storefront Navbar.
@@ -53,9 +58,13 @@ function App() {
         <Route path="products" element={<AdminProducts />} />
         <Route path="products/new" element={<ProductForm />} />
         <Route path="products/:id/edit" element={<ProductForm />} />
+        <Route path="logo" element={<AdminLogo />} />
+        <Route path="hero" element={<AdminHero />} />
         <Route path="categories" element={<AdminCategories />} />
         <Route path="orders" element={<AdminOrders />} />
         <Route path="customers" element={<AdminCustomers />} />
+        <Route path="settings" element={<AdminSettings />} />
+        
       </Route>
 
       {/* Standalone — first-admin setup, intentionally outside both layouts */}
