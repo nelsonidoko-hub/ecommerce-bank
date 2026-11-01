@@ -16,6 +16,7 @@ import {
   ArrowTopRightOnSquareIcon,
   VideoCameraIcon,
   Cog6ToothIcon,
+  HomeIcon,
 } from '@heroicons/react/24/outline'
 
 const NAV_ITEMS = [
@@ -26,6 +27,7 @@ const NAV_ITEMS = [
   { label: 'Orders', to: '/admin/orders', icon: ClipboardDocumentListIcon },
   { label: 'Customers', to: '/admin/customers', icon: UsersIcon },
   { label: 'Hero Banner', to: '/admin/hero', icon: VideoCameraIcon },
+  { label: 'Homepage', to: '/admin/homepage', icon: HomeIcon },
   { label: 'Settings', to: '/admin/settings', icon: Cog6ToothIcon },
 ]
 

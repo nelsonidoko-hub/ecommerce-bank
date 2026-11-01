@@ -16,13 +16,13 @@ function MiniCard({ product }) {
           src={image}
           alt={product.name}
           loading="lazy"
-          className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105 "
+          className="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
         />
       </div>
 
       <div className="mt-4 text-sm md:mt-6">
-        <p className="text-gray-900 font-poppins">{product.name}</p>
-        <p className="text-gray-500 font-epilogue mt-1 text-xs md:mt-2">
+        <p className="text-gray-900">{product.name}</p>
+        <p className="text-gray-500">
           {soldOut ? 'Sold Out' : `₦${Number(product.price).toLocaleString()}.00`}
         </p>
         {colorCount > 1 && (
@@ -60,14 +60,16 @@ function FeaturedCollection({
           />
           <div className="absolute inset-0 bg-black/10" />
 
-          <div className="absolute inset-0 flex flex-col items-center justify-center px-2 text-center text-white">
-            <h3 className="text-xl font-medium tracking-wide md:text-2xl font-anton">{title}</h3>
-            <Link
-              to={buttonLink}
-              className="mt-8 font-Anton font-medium border border-white px-8 py-3 text-xs tracking-wider transition hover:bg-white hover:text-black"
-            >
-              {buttonText}
-            </Link>
+          <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center text-white">
+            <h3 className="text-xl font-medium tracking-wide md:text-2xl">{title}</h3>
+            {buttonText && buttonLink && (
+              <Link
+                to={buttonLink}
+                className="mt-8 border border-white px-8 py-3 text-xs tracking-wider transition hover:bg-white hover:text-black"
+              >
+                {buttonText}
+              </Link>
+            )}
           </div>
         </div>
       </div>

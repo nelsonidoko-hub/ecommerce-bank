@@ -23,6 +23,7 @@ import OrderDetail from './pages/OrderDetail'
 import AdminLogo from './pages/admin/AdminLogo'
 import AdminHero from './pages/admin/AdminHero'
 import AdminSettings from './pages/admin/AdminSettings'
+import AdminHomepage from './pages/admin/AdminHomepage'
 
 function App() {
   return (
@@ -64,7 +65,7 @@ function App() {
         <Route path="orders" element={<AdminOrders />} />
         <Route path="customers" element={<AdminCustomers />} />
         <Route path="settings" element={<AdminSettings />} />
-        
+        <Route path="homepage" element={<AdminHomepage />} />
       </Route>
 
       {/* Standalone — first-admin setup, intentionally outside both layouts */}

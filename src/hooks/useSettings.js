@@ -19,6 +19,30 @@ export const defaultSettings = {
     readyTime: 'Usually ready in 2 to 4 hours',
   },
   announcement: { enabled: false, text: '', link: '' },
+  homeArrivals: {
+    enabled: true,
+    title: 'New Arrivals',
+    subtitle: 'Explore the newest drops',
+    count: 8,
+  },
+  homeBestSellers: { enabled: true, label: 'Trending', title: 'Best Seller' },
+  homeBanner: {
+    enabled: true,
+    image: '',
+    heading: 'New Season, New Style',
+    text: 'Check out our latest collection before it sells out',
+    buttonLabel: 'Shop Now',
+    buttonLink: '/shop',
+  },
+  homeCategoryRow: { enabled: true, title: 'Best Shoes', category: 'shoes' },
+  homeFeatured: {
+    enabled: true,
+    title: 'ZERO TO THE WORLD',
+    image: '',
+    buttonLabel: 'VIEW',
+    buttonLink: '/shop',
+    category: '',
+  },
 }
 
 // One shared copy, so the navbar, footer and checkout make a single request
