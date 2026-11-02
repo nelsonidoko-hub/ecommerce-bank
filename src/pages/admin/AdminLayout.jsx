@@ -17,6 +17,8 @@ import {
   VideoCameraIcon,
   Cog6ToothIcon,
   HomeIcon,
+  TicketIcon,
+  DocumentTextIcon,
 } from '@heroicons/react/24/outline'
 
 const NAV_ITEMS = [
@@ -28,6 +30,8 @@ const NAV_ITEMS = [
   { label: 'Customers', to: '/admin/customers', icon: UsersIcon },
   { label: 'Hero Banner', to: '/admin/hero', icon: VideoCameraIcon },
   { label: 'Homepage', to: '/admin/homepage', icon: HomeIcon },
+  { label: 'Discounts', to: '/admin/discounts', icon: TicketIcon },
+  { label: 'Pages', to: '/admin/pages', icon: DocumentTextIcon },
   { label: 'Settings', to: '/admin/settings', icon: Cog6ToothIcon },
 ]
 

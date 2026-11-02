@@ -125,7 +125,7 @@ function AdminSettings() {
               />
             </Field>
           </div>
-          <Field label="WhatsApp number" hint="With country code, no spaces, e.g. 2348012345678">
+          <Field label="WhatsApp number" hint="Powers the Chat With Us button on your store. e.g. 08012345678 or 2348012345678. Leave empty to hide the button.">
             <input
               className={inputClass}
               value={form.whatsappNumber}

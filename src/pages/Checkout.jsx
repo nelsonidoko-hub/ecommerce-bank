@@ -1,11 +1,12 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
 import { useSettings } from '../hooks/useSettings'
 import { createOrder } from '../services/orderService'
+import { validateDiscount } from '../services/discountService'
 import { initializePayment } from '../services/paymentService'
-import { QuestionMarkCircleIcon, ShoppingBagIcon, BuildingStorefrontIcon, TruckIcon } from '@heroicons/react/24/outline'
+import { QuestionMarkCircleIcon, ShoppingBagIcon, BuildingStorefrontIcon, TruckIcon, TagIcon } from '@heroicons/react/24/outline'
 
 function Checkout() {
   const { cartItems } = useCart()
@@ -45,6 +46,13 @@ function Checkout() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
+  // Discount code
+  const [codeInput, setCodeInput] = useState('')
+  const [appliedCode, setAppliedCode] = useState('')
+  const [discountAmount, setDiscountAmount] = useState(0)
+  const [codeMessage, setCodeMessage] = useState('')
+  const [codeLoading, setCodeLoading] = useState(false)
+
   // Pricing. These mirror the rules the server applies when the order is placed
   // (the server recalculates, so this is only what the customer is shown).
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
@@ -56,8 +64,22 @@ function Checkout() {
   const qualifiesForFree = freeThreshold > 0 && subtotal >= freeThreshold
   const shippingCost = isPickup || qualifiesForFree ? 0 : settings.shipping.flatRate
   const taxRate = settings.tax.rate
-  const estimatedTax = Math.round((subtotal * taxRate) / 100)
-  const finalTotal = subtotal + shippingCost + estimatedTax
+  const discountedSubtotal = Math.max(0, subtotal - discountAmount)
+  const estimatedTax = Math.round((discountedSubtotal * taxRate) / 100)
+  const finalTotal = discountedSubtotal + shippingCost + estimatedTax
+
+  // If the cart total changes after a code was applied, check the code again
+  // so the amount shown always matches what the server will charge.
+  useEffect(() => {
+    if (!appliedCode || !user) return
+    validateDiscount(appliedCode, subtotal, user.token)
+      .then((res) => setDiscountAmount(res.amount))
+      .catch((err) => {
+        setAppliedCode('')
+        setDiscountAmount(0)
+        setCodeMessage(err.response?.data?.message || 'This code can no longer be used')
+      })
+  }, [subtotal, appliedCode])
 
   if (!user) {
     return (
@@ -73,6 +95,30 @@ function Checkout() {
         </div>
       </div>
     )
+  }
+
+  async function handleApplyCode() {
+    const code = codeInput.trim()
+    if (!code) return
+
+    setCodeLoading(true)
+    setCodeMessage('')
+    try {
+      const res = await validateDiscount(code, subtotal, user.token)
+      setAppliedCode(res.code)
+      setDiscountAmount(res.amount)
+      setCodeInput('')
+    } catch (err) {
+      setCodeMessage(err.response?.data?.message || 'Could not check that code')
+    } finally {
+      setCodeLoading(false)
+    }
+  }
+
+  function handleRemoveCode() {
+    setAppliedCode('')
+    setDiscountAmount(0)
+    setCodeMessage('')
   }
 
   async function handleSubmit(e) {
@@ -93,6 +139,7 @@ function Checkout() {
           quantity: item.quantity,
         })),
         deliveryMethod,
+        discountCode: appliedCode || undefined,
         shippingAddress: isPickup
           ? {
               pickupType: 'Store Pickup',
@@ -549,12 +596,61 @@ function Checkout() {
               ))}
             </div>
 
+            {/* Discount code */}
+            <div>
+              {appliedCode ? (
+                <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg px-3 py-2 text-sm">
+                  <span className="flex items-center gap-2 text-green-800 font-medium">
+                    <TagIcon className="w-4 h-4" /> {appliedCode}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleRemoveCode}
+                    className="text-xs text-gray-500 hover:text-red-600"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={codeInput}
+                    onChange={(e) => setCodeInput(e.target.value.toUpperCase())}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        handleApplyCode()
+                      }
+                    }}
+                    placeholder="Discount code"
+                    className="flex-1 min-w-0 border border-gray-300 rounded-lg px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-600"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleApplyCode}
+                    disabled={codeLoading || !codeInput.trim()}
+                    className="bg-gray-900 text-white px-4 rounded-lg text-sm font-medium hover:bg-gray-800 disabled:opacity-50"
+                  >
+                    {codeLoading ? '...' : 'Apply'}
+                  </button>
+                </div>
+              )}
+              {codeMessage && <p className="text-xs text-red-600 mt-1">{codeMessage}</p>}
+            </div>
+
             {/* Line Item Pricing breakdown */}
             <div className="border-t border-gray-200 pt-4 space-y-2 text-xs sm:text-sm text-gray-600">
               <div className="flex justify-between">
                 <span>Subtotal · {totalItemCount} items</span>
                 <span className="font-semibold text-gray-900">₦{subtotal.toLocaleString()}</span>
               </div>
+              {discountAmount > 0 && (
+                <div className="flex justify-between text-green-700">
+                  <span>Discount ({appliedCode})</span>
+                  <span className="font-semibold">-₦{discountAmount.toLocaleString()}</span>
+                </div>
+              )}
               <div className="flex justify-between items-center">
                 <span className="flex items-center gap-1">
                   Shipping <QuestionMarkCircleIcon className="w-4 h-4 text-gray-400" />

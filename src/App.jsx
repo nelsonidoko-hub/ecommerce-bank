@@ -24,6 +24,9 @@ import AdminLogo from './pages/admin/AdminLogo'
 import AdminHero from './pages/admin/AdminHero'
 import AdminSettings from './pages/admin/AdminSettings'
 import AdminHomepage from './pages/admin/AdminHomepage'
+import AdminDiscounts from './pages/admin/AdminDiscounts'
+import AdminPages from './pages/admin/AdminPages'
+import PageView from './pages/PageView'
 
 function App() {
   return (
@@ -41,7 +44,7 @@ function App() {
         <Route path="/shop" element={<Shop />} />
         <Route path="/orders" element={<MyOrders />} />
         <Route path="/orders/:id" element={<OrderDetail />} />
-
+        <Route path=":slug" element={<PageView />} />
         
       </Route>
 
@@ -66,6 +69,9 @@ function App() {
         <Route path="customers" element={<AdminCustomers />} />
         <Route path="settings" element={<AdminSettings />} />
         <Route path="homepage" element={<AdminHomepage />} />
+        <Route path="discounts" element={<AdminDiscounts />} />
+        <Route path="pages" element={<AdminPages />} />
+
       </Route>
 
       {/* Standalone — first-admin setup, intentionally outside both layouts */}

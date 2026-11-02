@@ -1,9 +1,11 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
 import { RiInstagramLine, RiTwitterXLine, RiTiktokLine } from 'react-icons/ri'
 import { useSettings } from '../hooks/useSettings'
+import { getFooterPages } from '../services/pageService'
 
-const resources = [
+const fallbackResources = [
   { label: 'FAQ', to: '/faq' },
   { label: 'Shipping Policy', to: '/shipping-policy' },
   { label: 'Privacy Policy', to: '/privacy' },
@@ -11,7 +13,7 @@ const resources = [
   { label: 'Terms Of Service', to: '/terms' },
 ]
 
-const support = [
+const fallbackSupport = [
   { label: 'About Us', to: '/about' },
   { label: 'Contact Us', to: '/contact' },
 ]
@@ -26,6 +28,25 @@ const withProtocol = (url) => (/^https?:\/\//.test(url) ? url : `https://${url}`
 
 function Footer() {
   const { settings } = useSettings()
+
+  // Footer links come from the Pages in admin. If that request fails, the
+  // fixed lists above are used so the footer is never empty.
+  const [pages, setPages] = useState(null)
+  useEffect(() => {
+    getFooterPages()
+      .then((data) => setPages(Array.isArray(data) ? data : null))
+      .catch((err) => console.error('Could not load footer pages', err))
+  }, [])
+
+  const linksFor = (column, fallback) =>
+    pages
+      ? pages
+          .filter((page) => page.footerColumn === column)
+          .map((page) => ({ label: page.title, to: `/${page.slug}` }))
+      : fallback
+
+  const resources = linksFor('resources', fallbackResources)
+  const support = linksFor('support', fallbackSupport)
   const { address, social, contactEmail, contactPhone, storeName } = settings
 
   // Only show social icons that have a link filled in
