@@ -323,6 +323,37 @@ function AdminOrders() {
                             </div>
                           </div>
 
+                          {order.subtotal > 0 && (
+                            <div className="mt-6 max-w-xs ml-auto text-sm space-y-1">
+                              <div className="flex justify-between text-gray-600">
+                                <span>Subtotal</span>
+                                <span>₦{order.subtotal.toLocaleString()}</span>
+                              </div>
+                              {order.discountAmount > 0 && (
+                                <div className="flex justify-between text-green-700">
+                                  <span>Discount{order.discountCode ? ` (${order.discountCode})` : ''}</span>
+                                  <span>-₦{order.discountAmount.toLocaleString()}</span>
+                                </div>
+                              )}
+                              <div className="flex justify-between text-gray-600">
+                                <span>{isPickup ? 'Pickup' : 'Delivery'}</span>
+                                <span>
+                                  {order.shippingCost > 0 ? `₦${order.shippingCost.toLocaleString()}` : 'Free'}
+                                </span>
+                              </div>
+                              {order.taxAmount > 0 && (
+                                <div className="flex justify-between text-gray-600">
+                                  <span>Tax</span>
+                                  <span>₦{order.taxAmount.toLocaleString()}</span>
+                                </div>
+                              )}
+                              <div className="flex justify-between font-semibold border-t pt-1">
+                                <span>Total</span>
+                                <span>₦{order.totalPrice.toLocaleString()}</span>
+                              </div>
+                            </div>
+                          )}
+
                           {/* Tracking panel — branches by delivery method */}
                           <div className="mt-6 border-t pt-4">
                             {isPickup ? (
