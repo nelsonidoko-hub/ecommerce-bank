@@ -26,7 +26,9 @@ import AdminSettings from './pages/admin/AdminSettings'
 import AdminHomepage from './pages/admin/AdminHomepage'
 import AdminDiscounts from './pages/admin/AdminDiscounts'
 import AdminPages from './pages/admin/AdminPages'
+import AdminPayments from './pages/admin/AdminPayments'
 import PageView from './pages/PageView'
+
 
 function App() {
   return (
@@ -70,6 +72,7 @@ function App() {
         <Route path="settings" element={<AdminSettings />} />
         <Route path="homepage" element={<AdminHomepage />} />
         <Route path="discounts" element={<AdminDiscounts />} />
+        <Route path="payments" element={<AdminPayments />} />
         <Route path="pages" element={<AdminPages />} />
 
       </Route>

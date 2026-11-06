@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import ProductCard from '../components/ProductCard'
 import Hero from '../components/Hero'
 import FeaturedCollection from '../components/FeaturedCollection'
+import PageLoader from '../components/PageLoader'
 import b18 from '../assets/img/side-hero2.png'
 import c2 from '../assets/img/c2.jpg'
 import { getProducts, getProductsByCategory, getBestSellers } from '../services/productService'
@@ -18,6 +19,45 @@ function Home() {
   const [bestSellerProducts, setBestSellerProducts] = useState([])
   const [featuredByCategory, setFeaturedByCategory] = useState(null)
 
+  // Loading screen. It shows on the first visit of a browser session, until the
+  // backend has answered. That also covers a slow wake-up on free hosting.
+  const [firstVisit] = useState(() => {
+    try {
+      return !sessionStorage.getItem('home_loaded')
+    } catch {
+      return true
+    }
+  })
+  const [productsReady, setProductsReady] = useState(false)
+  const [bestSellersReady, setBestSellersReady] = useState(false)
+  const [heroReady, setHeroReady] = useState(false)
+  const [minElapsed, setMinElapsed] = useState(false)
+  const [slow, setSlow] = useState(false)
+  const [gaveUp, setGaveUp] = useState(false)
+
+  // A failed request still counts as "done", so the page can never hang on an error
+  const ready = loaded && productsReady && bestSellersReady && heroReady
+
+  useEffect(() => {
+    const timers = [
+      setTimeout(() => setMinElapsed(true), 500), // avoids a flash when everything is instant
+      setTimeout(() => setSlow(true), 6000), // then reassure the visitor
+      setTimeout(() => setGaveUp(true), 90000), // never spin forever
+    ]
+    return () => timers.forEach(clearTimeout)
+  }, [])
+
+  useEffect(() => {
+    if (!ready) return
+    try {
+      sessionStorage.setItem('home_loaded', '1')
+    } catch {
+      // storage unavailable: the loader just shows again next time
+    }
+  }, [ready])
+
+  const showLoader = firstVisit && !((ready && minElapsed) || gaveUp)
+
   const [categoryRowProgress, setCategoryRowProgress] = useState(0)
   const [bestSellerProgress, setBestSellerProgress] = useState(0)
 
@@ -29,10 +69,12 @@ function Home() {
     getProducts()
       .then((data) => setProducts(Array.isArray(data) ? data : []))
       .catch((err) => console.error(err))
+      .finally(() => setProductsReady(true))
 
     getBestSellers()
       .then((data) => setBestSellerProducts(Array.isArray(data) ? data : []))
       .catch((err) => console.error(err))
+      .finally(() => setBestSellersReady(true))
   }, [])
 
   // The category row follows whichever category the admin picked
@@ -97,7 +139,8 @@ function Home() {
 
   return (
     <div className="">
-      <Hero className="mb-12" />
+      <PageLoader show={showLoader} slow={slow} />
+      <Hero onReady={() => setHeroReady(true)} />
       <div className="px-6 md:px-10">
         {/* New arrivals */}
         {homeArrivals.enabled && (

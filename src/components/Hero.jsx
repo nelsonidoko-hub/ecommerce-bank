@@ -41,7 +41,21 @@ const fallbackSlides = [
 const IMAGE_DURATION = 3000 // ms each image stays on screen
 const VIDEO_MAX_DURATION = 30000 // safety cap if a video stalls or is very long
 
-function Hero() {
+// Resolves when the first slide's picture has downloaded (or failed, or 5 seconds
+// have passed), so a slow image can never hold the whole page hostage.
+function preloadFirstImage(list) {
+  const first = list[0]
+  if (!first || first.mediaType === 'video') return Promise.resolve()
+  return new Promise((resolve) => {
+    const img = new Image()
+    img.onload = resolve
+    img.onerror = resolve
+    img.src = first.mediaUrl
+    setTimeout(resolve, 5000)
+  })
+}
+
+function Hero({ onReady }) {
   const [slides, setSlides] = useState([])
   const [loaded, setLoaded] = useState(false)
   const [currentSlide, setCurrentSlide] = useState(0)
@@ -49,14 +63,22 @@ function Hero() {
   useEffect(() => {
     getHeroSlides()
       .then((data) => {
-        setSlides(Array.isArray(data) && data.length > 0 ? data : fallbackSlides)
+        const list = Array.isArray(data) && data.length > 0 ? data : fallbackSlides
+        setSlides(list)
         setCurrentSlide(0)
+        return list
       })
       .catch((err) => {
         console.error(err)
         setSlides(fallbackSlides)
+        return fallbackSlides
       })
-      .finally(() => setLoaded(true))
+      // Wait for the first picture, so the hero never appears as an empty dark box
+      .then((list) => preloadFirstImage(list))
+      .finally(() => {
+        setLoaded(true)
+        if (onReady) onReady()
+      })
   }, [])
 
   const multiple = slides.length > 1
