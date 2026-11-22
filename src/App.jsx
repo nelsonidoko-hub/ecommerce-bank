@@ -28,6 +28,7 @@ import AdminDiscounts from './pages/admin/AdminDiscounts'
 import AdminPages from './pages/admin/AdminPages'
 import AdminPayments from './pages/admin/AdminPayments'
 import PageView from './pages/PageView'
+import AdminThemes from './pages/admin/AdminThemes'
 
 
 function App() {
@@ -74,7 +75,7 @@ function App() {
         <Route path="discounts" element={<AdminDiscounts />} />
         <Route path="payments" element={<AdminPayments />} />
         <Route path="pages" element={<AdminPages />} />
-
+        <Route path="themes" element={<AdminThemes />} />
       </Route>
 
       {/* Standalone — first-admin setup, intentionally outside both layouts */}

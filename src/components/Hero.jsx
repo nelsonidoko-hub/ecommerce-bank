@@ -2,9 +2,11 @@ import { Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { ArrowRightIcon } from '@heroicons/react/24/outline'
 import { getHeroSlides } from '../services/heroService'
-import bag1 from '../assets/img/bag-hero1.png'
-import bag2 from '../assets/img/bag-hero2.png'
-import bag3 from '../assets/img/bag-hero4.png'
+import { useStoreTheme } from '../hooks/useStoreTheme'
+import OpenStatusBadge from './OpenStatusBadge'
+import bag1 from '../assets/img/bag-hero1.webp'
+import bag2 from '../assets/img/bag-hero2.webp'
+import bag3 from '../assets/img/bag-hero4.webp'
 
 // Shown only when no slides have been added in the admin panel yet,
 // so the homepage is never blank.
@@ -59,6 +61,7 @@ function Hero({ onReady }) {
   const [slides, setSlides] = useState([])
   const [loaded, setLoaded] = useState(false)
   const [currentSlide, setCurrentSlide] = useState(0)
+  const { layout } = useStoreTheme()
 
   useEffect(() => {
     getHeroSlides()
@@ -97,8 +100,9 @@ function Hero({ onReady }) {
     return () => clearTimeout(timer)
   }, [currentSlide, slides])
 
-  const containerClass =
-    'relative min-h-[60vh] sm:h-screen w-full overflow-hidden bg-gray-900 flex flex-col items-center justify-center text-center text-white'
+  // Full screen by default; some templates (like Fresh) use a shorter banner
+  const heroHeight = layout.hero === 'compact' ? 'min-h-[45vh] sm:h-[60vh]' : 'min-h-[60vh] sm:h-screen'
+  const containerClass = `relative ${heroHeight} w-full overflow-hidden bg-gray-900 flex flex-col items-center justify-center text-center text-white`
 
   // Avoid flashing fallback content before the real slides arrive
   if (!loaded || !slide) {
@@ -136,6 +140,7 @@ function Hero({ onReady }) {
       <div className="absolute inset-0 bg-black/40" />
 
       <div className="relative z-10 flex flex-col items-center justify-center text-center px-4 py-12 sm:py-0">
+        <OpenStatusBadge className="mb-4" />
         {slide.heading && (
           <h1 className="text-2xl sm:text-4xl font-bold font-poppins mb-3 sm:mb-4">
             {slide.heading}

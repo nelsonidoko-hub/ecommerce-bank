@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { getSettings } from '../services/settingsService'
+import { readStoredTheme, storeTheme } from '../utils/themes'
 
 // Used until the real settings arrive, or if the request fails,
 // so the footer and checkout never break. Mirrors the backend defaults.
@@ -19,6 +20,19 @@ export const defaultSettings = {
     readyTime: 'Usually ready in 2 to 4 hours',
   },
   announcement: { enabled: false, text: '', link: '' },
+  theme: { template: 'classic', brandColor: '', headingFont: '', bodyFont: '', radius: '' },
+  hours: {
+    enabled: false,
+    timezone: 'Africa/Lagos',
+    whenClosed: 'block',
+    monOpen: '09:00', monClose: '21:00', monClosed: false,
+    tueOpen: '09:00', tueClose: '21:00', tueClosed: false,
+    wedOpen: '09:00', wedClose: '21:00', wedClosed: false,
+    thuOpen: '09:00', thuClose: '21:00', thuClosed: false,
+    friOpen: '09:00', friClose: '21:00', friClosed: false,
+    satOpen: '09:00', satClose: '21:00', satClosed: false,
+    sunOpen: '09:00', sunClose: '21:00', sunClosed: false,
+  },
   homeArrivals: {
     enabled: true,
     title: 'New Arrivals',
@@ -52,10 +66,15 @@ let pending = null
 // Call after saving in the admin so this tab shows the new values immediately
 export function setCachedSettings(next) {
   cached = next
+  storeTheme(next.theme)
 }
 
 export function useSettings() {
-  const [settings, setSettings] = useState(cached || defaultSettings)
+  // Until the real settings arrive, use the theme remembered from the last visit,
+  // so the storefront doesn't flash the wrong look while it loads.
+  const [settings, setSettings] = useState(
+    () => cached || { ...defaultSettings, theme: readStoredTheme() || defaultSettings.theme }
+  )
   const [loaded, setLoaded] = useState(Boolean(cached))
 
   useEffect(() => {
@@ -65,6 +84,7 @@ export function useSettings() {
       pending = getSettings()
         .then((data) => {
           cached = data
+          storeTheme(data.theme)
           return data
         })
         .catch((err) => {

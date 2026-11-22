@@ -20,6 +20,7 @@ import {
   TicketIcon,
   DocumentTextIcon,
   CreditCardIcon,
+  SwatchIcon,
 } from '@heroicons/react/24/outline'
 
 const NAV_ITEMS = [
@@ -31,6 +32,7 @@ const NAV_ITEMS = [
   { label: 'Customers', to: '/admin/customers', icon: UsersIcon },
   { label: 'Hero Banner', to: '/admin/hero', icon: VideoCameraIcon },
   { label: 'Homepage', to: '/admin/homepage', icon: HomeIcon },
+  { label: 'Themes', to: '/admin/themes', icon: SwatchIcon },
   { label: 'Discounts', to: '/admin/discounts', icon: TicketIcon },
   { label: 'Pages', to: '/admin/pages', icon: DocumentTextIcon },
   { label: 'Payments', to: '/admin/payments', icon: CreditCardIcon },

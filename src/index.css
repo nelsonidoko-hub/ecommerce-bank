@@ -1,12 +1,16 @@
-@import url('https://fonts.googleapis.com/css2?family=Anton&family=Epilogue:ital,wght@0,100..900;1,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Epilogue:ital,wght@0,100..900;1,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Playfair+Display:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 
 
-@theme {
-  --font-epilogue: "Epilogue", sans-serif;
+/* "inline" makes font-poppins and font-epilogue read the theme variables at the
+   moment they are used. With no theme variable set, the fallback after the
+   comma is the original font, so a store on the Classic template looks exactly
+   as it did before. */
+@theme inline {
+  --font-epilogue: var(--theme-font-body, "Epilogue", sans-serif);
   --font-Anton: "Anton", sans-serif;
-  --font-poppins : "Poppins", sans-serif;
+  --font-poppins: var(--theme-font-heading, "Poppins", sans-serif);
 }
 
 @keyframes fade-in {
@@ -16,4 +20,19 @@
 
 .animate-fade-in {
   animation: fade-in 0.6s ease-out;
+}
+
+/* Store templates (see utils/themes.js). PublicLayout adds these classes to the
+   wrapper around the storefront, so the admin area is never affected. */
+.theme-upper :is(h1, h2, h3, h4) {
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.theme-weight-400 :is(h1, h2, h3, h4) {
+  font-weight: 400;
+}
+
+.theme-weight-500 :is(h1, h2, h3, h4) {
+  font-weight: 500;
 }

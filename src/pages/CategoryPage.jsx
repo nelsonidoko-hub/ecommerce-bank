@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import ProductCard from '../components/ProductCard'
 import { getProductsByCategory } from '../services/productService'
 import FeaturedCollection from '../components/FeaturedCollection'
-import slide from '../assets/img/slide-2.png'
+import slide from '../assets/img/slide-2.webp'
 
 function CategoryPage() {
   const { categoryName } = useParams()

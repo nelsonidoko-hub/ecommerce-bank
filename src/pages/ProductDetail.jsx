@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { getProductById, getProductsByCategory } from '../services/productService'
 import { useCart } from '../context/CartContext'
 import ProductCard from '../components/ProductCard'
+import { useSettings } from '../hooks/useSettings'
 
 function ProductDetail() {
   const { productId } = useParams()
@@ -14,6 +15,7 @@ function ProductDetail() {
   const [activeImage, setActiveImage] = useState('')
   const { addToCart } = useCart()
   const navigate = useNavigate()
+  const { settings } = useSettings()
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -115,7 +117,7 @@ function ProductDetail() {
 
         {/* Details */}
         <div>
-          <p className="text-xs uppercase text-gray-400 tracking-wide">Zipp Republic</p>
+          <p className="text-xs uppercase text-gray-400 tracking-wide">{settings.storeName}</p>
           <h2 className="text-2xl font-bold mt-1">{product.name}</h2>
           <p className="text-2xl font-bold text-gray-900 mt-3">₦{product.price.toLocaleString()}</p>
 

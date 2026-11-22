@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import ProductCard from '../components/ProductCard'
+import ProductGrid from '../components/ProductGrid'
 import { getProducts } from '../services/productService'
 
 function Shop() {
@@ -95,11 +95,7 @@ function Shop() {
       ) : filteredProducts.length === 0 ? (
         <p className="text-gray-500">No products found.</p>
       ) : (
-        <div className="grid grid-cols-1 min-[321px]:grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-4 gap-6 font-epilogue">
-          {filteredProducts.map((product) => (
-            <ProductCard key={product._id} product={product} />
-          ))}
-        </div>
+        <ProductGrid products={filteredProducts} />
       )}
     </div>
   )

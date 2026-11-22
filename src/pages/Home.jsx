@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import ProductCard from '../components/ProductCard'
+import ProductGrid from '../components/ProductGrid'
 import Hero from '../components/Hero'
 import FeaturedCollection from '../components/FeaturedCollection'
 import PageLoader from '../components/PageLoader'
-import b18 from '../assets/img/side-hero2.png'
-import c2 from '../assets/img/c2.jpg'
+import b18 from '../assets/img/side-hero2.webp'
+import c2 from '../assets/img/c2.webp'
 import { getProducts, getProductsByCategory, getBestSellers } from '../services/productService'
 import { useSettings } from '../hooks/useSettings'
 import { ChevronLeftIcon, ChevronRightIcon, ArrowRightIcon } from '@heroicons/react/24/outline'
@@ -149,11 +150,7 @@ function Home() {
             {homeArrivals.subtitle && (
               <p className="text-gray-500 font-epilogue mb-2">{homeArrivals.subtitle}</p>
             )}
-            <div className="grid grid-cols-1 min-[321px]:grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-4 gap-6 font-epilogue">
-              {gridProducts.map((product) => (
-                <ProductCard key={product._id} product={product} />
-              ))}
-            </div>
+            <ProductGrid products={gridProducts} />
           </div>
         )}
 
