@@ -79,7 +79,7 @@ function Dashboard() {
                   <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium capitalize text-slate-600">{shop.plan}</span>
                   {!shop.isOwner && <span className="text-xs text-slate-500">Staff</span>}
                 </div>
-                <p className="mt-1 truncate text-sm text-slate-500">{shop.url.replace(/^https?:\/\//, '').replace(/[?&]store=.*$/, '')}</p>
+                <p className="mt-1 truncate text-sm text-slate-500">{shop.url.replace(/^https?:\/\//, '')}</p>
                 <p className="mt-1 text-xs text-slate-500">
                   {note}
                   {shop.until && ['trial', 'active', 'grace'].includes(shop.state) ? ` ${day(shop.until)}.` : ''}

@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
+import { Cog6ToothIcon } from '@heroicons/react/24/outline'
 import { useStoreStatus } from '../hooks/useStoreStatus'
 import { platformUrl } from '../utils/storeContext'
 import { TEMPLATES } from '../utils/themes'
@@ -40,7 +41,24 @@ function StoreGate({ children }) {
   }
 
   // Still checking: show the shop as normal (no flash of a closed page)
-  if (!status || status.live) return children
+  if (!status) return children
+  // Live: the owner (or staff) gets a button back to the admin, on every page
+  if (status.live) {
+    if (!status.manage || pathname.startsWith('/admin')) return children
+    return (
+      <>
+        {children}
+        <Link
+          to="/admin"
+          className="fixed bottom-4 left-4 z-[60] inline-flex items-center gap-1.5 rounded-full bg-gray-900 px-4 py-2.5 text-sm font-semibold text-white shadow-lg hover:bg-gray-800"
+          style={{ marginBottom: 'env(safe-area-inset-bottom)' }}
+        >
+          <Cog6ToothIcon className="h-4 w-4" aria-hidden="true" />
+          Manage shop
+        </Link>
+      </>
+    )
+  }
   if (ALWAYS_OPEN.some((path) => pathname.startsWith(path))) return children
 
   if (status.manage) {
