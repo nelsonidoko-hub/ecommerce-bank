@@ -36,7 +36,7 @@ function MiniCard({ product }) {
 function FeaturedCollection({
   products = [],
   image,
-  title = 'ZERO TO THE WORLD',
+  title = 'Featured collection',
   buttonText = 'VIEW',
   buttonLink = '/shop',
 }) {

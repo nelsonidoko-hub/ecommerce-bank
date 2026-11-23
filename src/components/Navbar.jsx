@@ -142,7 +142,7 @@ function Navbar() {
           <Link to="/" className="text-xl font-bold text-blue-600">
             <img
               src={logo?.imageUrl || yl}
-              alt={logo?.altText || 'Abuja Store Logo'}
+              alt={logo?.altText || 'Store logo'}
               className="h-8 w-auto object-contain"
             />
           </Link>
@@ -237,7 +237,7 @@ function Navbar() {
 
         <img
           src={logo?.imageUrl || yl}
-          alt={logo?.altText || 'Abuja Store Logo'}
+          alt={logo?.altText || 'Store logo'}
           className="h-6 w-auto object-contain"
         />
 

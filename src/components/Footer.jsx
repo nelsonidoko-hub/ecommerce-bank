@@ -6,6 +6,10 @@ import { useSettings } from '../hooks/useSettings'
 import { useStoreTheme } from '../hooks/useStoreTheme'
 import { getFooterPages } from '../services/pageService'
 import { DAY_ORDER, DAY_NAMES, describeDay } from '../utils/openingHours'
+import { useStoreStatus } from '../hooks/useStoreStatus'
+
+// The platform's name for the footer credit. Set VITE_PLATFORM_NAME on Vercel.
+const PLATFORM_NAME = import.meta.env?.VITE_PLATFORM_NAME || 'our platform'
 
 const fallbackResources = [
   { label: 'FAQ', to: '/faq' },
@@ -53,6 +57,7 @@ function Footer() {
 
   // Dark or light footer, chosen by the template
   const { layout } = useStoreTheme()
+  const storeStatus = useStoreStatus()
   const tone =
     layout.footer === 'light'
       ? {
@@ -197,6 +202,10 @@ function Footer() {
 
           <p className={`text-sm ${tone.copy}`}>
             © {new Date().getFullYear()} {storeName}. All rights reserved.
+            {/* Basic plan shops carry a small credit line; Pro removes it */}
+            {storeStatus?.poweredBy && (
+              <span className="block text-xs opacity-70">Powered by {PLATFORM_NAME}</span>
+            )}
           </p>
         </div>
       </div>

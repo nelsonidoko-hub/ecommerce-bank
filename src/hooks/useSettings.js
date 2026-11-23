@@ -5,7 +5,7 @@ import { readStoredTheme, storeTheme } from '../utils/themes'
 // Used until the real settings arrive, or if the request fails,
 // so the footer and checkout never break. Mirrors the backend defaults.
 export const defaultSettings = {
-  storeName: 'Abuja Store',
+  storeName: '',
   contactEmail: '',
   contactPhone: '',
   whatsappNumber: '',
@@ -51,7 +51,7 @@ export const defaultSettings = {
   homeCategoryRow: { enabled: true, title: 'Best Shoes', category: 'shoes' },
   homeFeatured: {
     enabled: true,
-    title: 'ZERO TO THE WORLD',
+    title: 'Featured collection',
     image: '',
     buttonLabel: 'VIEW',
     buttonLink: '/shop',

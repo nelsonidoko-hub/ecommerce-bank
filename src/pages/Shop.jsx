@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import ProductGrid from '../components/ProductGrid'
+import StoreSearchBar from '../components/StoreSearchBar'
 import { getProducts } from '../services/productService'
 
 function Shop() {
@@ -52,6 +53,7 @@ function Shop() {
   return (
     <div className="px-6 md:px-10 py-8">
       <h2 className="text-2xl font-bold mb-6">Shop All</h2>
+      <StoreSearchBar />
 
       <div className="flex flex-wrap gap-4 mb-8 pb-4 border-b">
         <select

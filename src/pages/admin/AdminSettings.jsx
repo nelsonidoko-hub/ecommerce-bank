@@ -9,7 +9,11 @@ import {
   TruckIcon,
   MegaphoneIcon,
   CheckCircleIcon,
+  ClockIcon,
 } from '@heroicons/react/24/outline'
+import { DAY_ORDER, DAY_NAMES, getOpenStatus } from '../../utils/openingHours'
+
+const TIMEZONES = ['Africa/Lagos', 'Africa/Accra', 'Africa/Nairobi', 'Africa/Johannesburg', 'Europe/London', 'UTC']
 
 const inputClass = 'border rounded-md p-2 w-full text-sm'
 
@@ -33,6 +37,98 @@ function Field({ label, hint, children }) {
       {children}
       {hint && <p className="text-[11px] text-gray-400 mt-1">{hint}</p>}
     </div>
+  )
+}
+
+// Opening hours: on/off, time zone, what to do when closed, and each day's times
+export function OpeningHoursCard({ hours, onChange }) {
+  const status = getOpenStatus(hours)
+  return (
+    <Card
+      icon={ClockIcon}
+      title="Opening hours"
+      description="Optional. Useful for restaurants and food vendors. When on, the storefront shows open or closed, and checkout follows your choice below."
+    >
+      <label className="flex items-center gap-2 text-sm">
+        <input
+          type="checkbox"
+          checked={hours.enabled}
+          onChange={(e) => onChange('enabled', e.target.checked)}
+        />
+        Use opening hours
+      </label>
+
+      {hours.enabled && (
+        <>
+          <p className={`text-xs font-medium ${status.open ? 'text-green-700' : 'text-red-700'}`}>
+            With these hours, right now the shop is: {status.text}
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Field label="Time zone">
+              <select
+                className={inputClass}
+                value={hours.timezone}
+                onChange={(e) => onChange('timezone', e.target.value)}
+              >
+                {(TIMEZONES.includes(hours.timezone) ? TIMEZONES : [hours.timezone, ...TIMEZONES]).map((tz) => (
+                  <option key={tz} value={tz}>{tz}</option>
+                ))}
+              </select>
+            </Field>
+            <Field label="When closed" hint="The server enforces this too.">
+              <select
+                className={inputClass}
+                value={hours.whenClosed}
+                onChange={(e) => onChange('whenClosed', e.target.value)}
+              >
+                <option value="block">Don't take orders</option>
+                <option value="preorder">Take pre-orders</option>
+              </select>
+            </Field>
+          </div>
+
+          <div className="flex flex-col divide-y border rounded-md">
+            {DAY_ORDER.map((day) => {
+              const closed = hours[`${day}Closed`]
+              return (
+                <div key={day} className="flex flex-wrap items-center gap-2 px-3 py-2 text-sm">
+                  <span className="w-24 font-medium text-gray-700">{DAY_NAMES[day]}</span>
+                  <input
+                    type="time"
+                    aria-label={`${DAY_NAMES[day]} opening time`}
+                    className="border rounded-md p-1.5 text-sm disabled:opacity-40"
+                    value={hours[`${day}Open`]}
+                    disabled={closed}
+                    onChange={(e) => onChange(`${day}Open`, e.target.value)}
+                  />
+                  <span className="text-gray-400">to</span>
+                  <input
+                    type="time"
+                    aria-label={`${DAY_NAMES[day]} closing time`}
+                    className="border rounded-md p-1.5 text-sm disabled:opacity-40"
+                    value={hours[`${day}Close`]}
+                    disabled={closed}
+                    onChange={(e) => onChange(`${day}Close`, e.target.value)}
+                  />
+                  <label className="ml-auto flex items-center gap-1.5 text-xs text-gray-600">
+                    <input
+                      type="checkbox"
+                      checked={closed}
+                      onChange={(e) => onChange(`${day}Closed`, e.target.checked)}
+                    />
+                    Closed
+                  </label>
+                </div>
+              )
+            })}
+          </div>
+          <p className="text-[11px] text-gray-400">
+            Late nights work: 18:00 to 02:00 means open until 2 AM the next morning.
+          </p>
+        </>
+      )}
+    </Card>
   )
 }
 
@@ -318,6 +414,11 @@ function AdminSettings() {
             />
           </Field>
         </Card>
+
+        <OpeningHoursCard
+          hours={{ ...defaultSettings.hours, ...form.hours }}
+          onChange={(field, value) => setNested('hours', field, value)}
+        />
       </div>
 
       <div className="sticky bottom-0 bg-gray-50/90 backdrop-blur py-4 mt-6 flex items-center gap-4">

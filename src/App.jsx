@@ -10,7 +10,6 @@ import PaymentSuccess from './pages/PaymentSuccess'
 import AdminRoute from './components/AdminRoute'
 import AdminLayout from './pages/admin/AdminLayout'
 import AdminDashboard from './pages/admin/AdminDashboard'
-import AdminRegister from './pages/admin/AdminRegister'
 import AdminProducts from './pages/admin/AdminProducts'
 import ProductForm from './pages/admin/ProductForm'
 import AdminOrders from './pages/admin/AdminOrders'
@@ -29,6 +28,8 @@ import AdminPages from './pages/admin/AdminPages'
 import AdminPayments from './pages/admin/AdminPayments'
 import PageView from './pages/PageView'
 import AdminThemes from './pages/admin/AdminThemes'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
 
 
 function App() {
@@ -41,6 +42,8 @@ function App() {
         <Route path="/product/:productId" element={<ProductDetail />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/payment-success" element={<PaymentSuccess />} />
         <Route path="/search" element={<SearchResults />} />
@@ -78,8 +81,6 @@ function App() {
         <Route path="themes" element={<AdminThemes />} />
       </Route>
 
-      {/* Standalone — first-admin setup, intentionally outside both layouts */}
-      <Route path="/admin/setup" element={<AdminRegister />} />
     </Routes>
   )
 }

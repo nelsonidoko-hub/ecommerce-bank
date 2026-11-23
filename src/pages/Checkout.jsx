@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
 import { useSettings } from '../hooks/useSettings'
+import { useOpenStatus } from '../hooks/useOpenStatus'
 import { createOrder } from '../services/orderService'
 import { validateDiscount } from '../services/discountService'
 import { initializePayment } from '../services/paymentService'
@@ -45,6 +46,11 @@ function Checkout() {
   const [saveInfo, setSaveInfo] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [customerNote, setCustomerNote] = useState('')
+  const openStatus = useOpenStatus()
+  // Closed and set to refuse orders: the server refuses too, this just says so early
+  const closedBlocked = openStatus.enabled && !openStatus.open && openStatus.whenClosed !== 'preorder'
+  const closedPreOrder = openStatus.enabled && !openStatus.open && openStatus.whenClosed === 'preorder'
 
   // Discount code
   const [codeInput, setCodeInput] = useState('')
@@ -140,6 +146,7 @@ function Checkout() {
         })),
         deliveryMethod,
         discountCode: appliedCode || undefined,
+        customerNote: customerNote.trim() || undefined,
         shippingAddress: isPickup
           ? {
               pickupType: 'Store Pickup',
@@ -186,6 +193,21 @@ function Checkout() {
             </h1>
             <ShoppingBagIcon className="w-6 h-6 text-blue-600 lg:hidden" />
           </div>
+
+          {openStatus.enabled && !openStatus.open && (
+            <div
+              className={`mb-6 rounded-lg border p-4 text-sm ${
+                closedBlocked ? 'border-red-200 bg-red-50 text-red-800' : 'border-amber-200 bg-amber-50 text-amber-900'
+              }`}
+            >
+              <p className="font-semibold">We're closed right now.</p>
+              <p className="mt-1">
+                {closedBlocked
+                  ? `Orders open again ${openStatus.opensText || 'soon'}.`
+                  : `You can still order. We'll start on it when we open${openStatus.opensText ? ` ${openStatus.opensText}` : ''}.`}
+              </p>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-8">
             {/* Contact Section */}
@@ -541,6 +563,23 @@ function Checkout() {
               </div>
             </div>
 
+            {/* Order note */}
+            <div>
+              <label htmlFor="customerNote" className="block text-lg font-bold text-gray-900 mb-3">
+                Order note <span className="text-sm font-normal text-gray-500">(optional)</span>
+              </label>
+              <textarea
+                id="customerNote"
+                rows={3}
+                maxLength={500}
+                value={customerNote}
+                onChange={(e) => setCustomerNote(e.target.value)}
+                placeholder="Anything we should know? e.g. no pepper, call on arrival"
+                className="w-full border border-gray-300 rounded-lg px-3.5 py-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-600"
+              />
+              <p className="mt-1 text-right text-xs text-gray-400">{customerNote.length}/500</p>
+            </div>
+
             {/* Error Message */}
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded-lg text-xs font-medium">
@@ -551,10 +590,16 @@ function Checkout() {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || closedBlocked}
               className="w-full bg-blue-600 text-white font-semibold py-4 rounded-xl hover:bg-blue-700 transition duration-200 text-base shadow-sm disabled:opacity-50"
             >
-              {loading ? 'Redirecting to Paystack...' : 'Pay now'}
+              {loading
+                ? 'Redirecting to Paystack...'
+                : closedBlocked
+                  ? 'Closed right now'
+                  : closedPreOrder
+                    ? 'Pay now (pre-order)'
+                    : 'Pay now'}
             </button>
           </form>
         </div>

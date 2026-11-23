@@ -224,6 +224,16 @@ function AdminOrders() {
                         >
                           {isPickup ? 'Pickup' : 'Ship'}
                         </span>
+                        {order.isPreOrder && (
+                          <span className="ml-1 text-xs px-2 py-1 rounded-full bg-amber-100 text-amber-800">
+                            Pre-order
+                          </span>
+                        )}
+                        {order.customerNote && (
+                          <span className="ml-1 text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700" title={order.customerNote}>
+                            Note
+                          </span>
+                        )}
                       </td>
                       <td className="p-3 font-semibold whitespace-nowrap">
                         ₦{order.totalPrice.toLocaleString()}
@@ -296,6 +306,20 @@ function AdminOrders() {
                                   <p className="text-sm text-gray-700">{order.shippingAddress?.city}</p>
                                   <p className="text-sm text-gray-700">{order.shippingAddress?.phone}</p>
                                 </>
+                              )}
+
+                              {order.isPreOrder && (
+                                <p className="mt-3 text-xs font-medium text-amber-800">
+                                  Pre-order: placed while the shop was closed
+                                </p>
+                              )}
+                              {order.customerNote && (
+                                <div className="mt-3 rounded-md bg-amber-50 border border-amber-200 p-3">
+                                  <p className="text-xs font-semibold text-gray-900 mb-1">Customer note</p>
+                                  <p className="text-sm text-gray-700 whitespace-pre-line break-words">
+                                    {order.customerNote}
+                                  </p>
+                                </div>
                               )}
                             </div>
 

@@ -1,6 +1,6 @@
 import { useSearchParams } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import ProductCard from '../components/ProductCard'
+import ProductGrid from '../components/ProductGrid'
 import { searchProducts } from '../services/productService'
 
 function SearchResults() {
@@ -74,11 +74,7 @@ function SearchResults() {
       ) : products.length === 0 ? (
         <p className="text-gray-500">{query ? 'No products found.' : 'Type something to search.'}</p>
       ) : (
-        <div className="grid grid-cols-1 min-[321px]:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {products.map((p) => (
-            <ProductCard key={p._id} product={p} />
-          ))}
-        </div>
+        <ProductGrid products={products} />
       )}
     </div>
   )

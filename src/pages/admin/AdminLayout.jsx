@@ -2,6 +2,7 @@ import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom'
 import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
 import yl from '../../assets/img/yl_png_logo.avif'
+import { useStoreStatus } from '../../hooks/useStoreStatus'
 
 import {
   Squares2X2Icon,
@@ -40,6 +41,7 @@ const NAV_ITEMS = [
 ]
 
 function AdminLayout() {
+  const storeStatus = useStoreStatus()
   const { user, logout } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
@@ -65,10 +67,10 @@ function AdminLayout() {
     <div className="flex h-full flex-col">
       {/* Sidebar branding */}
       <div className="flex h-16 items-center gap-3 border-b border-gray-800 px-5">
-        <Link to="/" aria-label="Abuja Store home">
+        <Link to="/" aria-label="Shop home">
           <img
             src={yl}
-            alt="Abuja Store"
+            alt="Shop logo"
             className="h-7 w-auto object-contain"
           />
         </Link>
@@ -181,7 +183,7 @@ function AdminLayout() {
                 {currentPage}
               </h1>
               <p className="hidden text-xs text-gray-500 sm:block">
-                Abuja Store Administration
+                {storeStatus?.name || 'Shop'} admin
               </p>
             </div>
           </div>

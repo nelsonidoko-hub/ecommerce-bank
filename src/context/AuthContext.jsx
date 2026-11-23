@@ -1,15 +1,16 @@
 import { createContext, useContext, useState } from 'react'
 import { loginUser, registerUser, resetPassword as resetPasswordRequest } from '../services/authService'
+import { storeKey } from '../utils/storeContext'
 
 
 const AuthContext = createContext()
 
 function getStoredUser() {
   try {
-    const stored = localStorage.getItem('user')
+    const stored = localStorage.getItem(storeKey('user'))
     return stored ? JSON.parse(stored) : null
   } catch {
-    localStorage.removeItem('user')
+    localStorage.removeItem(storeKey('user'))
     return null
   }
 }
@@ -21,7 +22,7 @@ export function AuthProvider({ children }) {
     const data = await loginUser(email, password)
 
     setUser(data)
-    localStorage.setItem('user', JSON.stringify(data))
+    localStorage.setItem(storeKey('user'), JSON.stringify(data))
 
     return data
   }
@@ -29,18 +30,18 @@ export function AuthProvider({ children }) {
   async function register(name, email, password) {
     const data = await registerUser(name, email, password)
     setUser(data)
-    localStorage.setItem('user', JSON.stringify(data))
+    localStorage.setItem(storeKey('user'), JSON.stringify(data))
   }
 
   async function resetPassword(token, password) {
     const data = await resetPasswordRequest(token, password)
     setUser(data)
-    localStorage.setItem('user', JSON.stringify(data))
+    localStorage.setItem(storeKey('user'), JSON.stringify(data))
   }
 
   function logout() {
     setUser(null)
-    localStorage.removeItem('user')
+    localStorage.removeItem(storeKey('user'))
   }
 
   return (

@@ -1,3 +1,4 @@
+import { storeKey } from './storeContext'
 // Store templates: the presets, and the code that turns a chosen template into
 // the CSS variables the storefront reads.
 //
@@ -53,11 +54,14 @@ export const TEMPLATES = {
     headingWeight: 0,
     // How things are arranged, not just coloured:
     //   card:    standard | borderless | bordered | menu (a row with a photo on the left)
+    //            | compact (dense, price first) | centered (soft, centred text)
+    //            | spec (product on white, full-width button) | tile (tinted, chunky)
     //   grid:    grid | list (list shows products as menu rows)
-    //   columns: products per row on desktop, in a grid
+    //   columns: products per row on desktop, in a grid (2-5)
     //   footer:  dark | light
-    //   hero:    full (full screen) | compact
-    layout: { card: 'standard', grid: 'grid', columns: 4, footer: 'dark', hero: 'full' },
+    //   hero:    full (full screen) | compact | slim (a short strip, products first)
+    //   search:  true shows a big search box above the products on shop and category pages
+    layout: { card: 'standard', grid: 'grid', columns: 4, footer: 'dark', hero: 'full', search: false },
   },
   minimal: {
     id: 'minimal',
@@ -72,7 +76,7 @@ export const TEMPLATES = {
     radius: 'square',
     uppercase: false,
     headingWeight: 500,
-    layout: { card: 'borderless', grid: 'grid', columns: 4, footer: 'light', hero: 'full' },
+    layout: { card: 'borderless', grid: 'grid', columns: 4, footer: 'light', hero: 'full', search: false },
   },
   bold: {
     id: 'bold',
@@ -87,7 +91,7 @@ export const TEMPLATES = {
     radius: 'square',
     uppercase: true,
     headingWeight: 400,
-    layout: { card: 'bordered', grid: 'grid', columns: 3, footer: 'dark', hero: 'full' },
+    layout: { card: 'bordered', grid: 'grid', columns: 3, footer: 'dark', hero: 'full', search: false },
   },
   fresh: {
     id: 'fresh',
@@ -102,7 +106,67 @@ export const TEMPLATES = {
     radius: 'round',
     uppercase: false,
     headingWeight: 0,
-    layout: { card: 'menu', grid: 'list', columns: 4, footer: 'light', hero: 'compact' },
+    layout: { card: 'menu', grid: 'list', columns: 4, footer: 'light', hero: 'compact', search: false },
+  },
+  catalog: {
+    id: 'catalog',
+    label: 'Catalog',
+    bestFor: 'Shops with lots of products',
+    description: 'Built for big ranges. A short banner, a big search box, five products per row and price-first cards so customers can scan fast.',
+    brand: '#047857',
+    ink: '#111827',
+    surface: '',
+    headingFont: 'epilogue',
+    bodyFont: 'epilogue',
+    radius: 'soft',
+    uppercase: false,
+    headingWeight: 0,
+    layout: { card: 'compact', grid: 'grid', columns: 5, footer: 'dark', hero: 'slim', search: true },
+  },
+  glow: {
+    id: 'glow',
+    label: 'Glow',
+    bestFor: 'Beauty, skincare, hair and perfume',
+    description: 'Soft and polished. Blush pink, a rose accent, elegant serif headings and gently rounded cards with centred text.',
+    brand: '#be185d',
+    ink: '#4a1d2c',
+    surface: '#fdf4f5',
+    headingFont: 'playfair',
+    bodyFont: 'poppins',
+    radius: 'round',
+    uppercase: false,
+    headingWeight: 500,
+    layout: { card: 'centered', grid: 'grid', columns: 4, footer: 'light', hero: 'full', search: false },
+  },
+  tech: {
+    id: 'tech',
+    label: 'Tech',
+    bestFor: 'Phones, gadgets and electronics',
+    description: 'Crisp and clear. Cool grey and teal, products shown whole on white like a spec sheet, a full-width Add to cart button and a big search box.',
+    brand: '#0e7490',
+    ink: '#0f172a',
+    surface: '#f8fafc',
+    headingFont: 'epilogue',
+    bodyFont: 'epilogue',
+    radius: 'soft',
+    uppercase: false,
+    headingWeight: 0,
+    layout: { card: 'spec', grid: 'grid', columns: 4, footer: 'dark', hero: 'compact', search: true },
+  },
+  playful: {
+    id: 'playful',
+    label: 'Playful',
+    bestFor: 'Kids, baby items and toys',
+    description: 'Bright and cheerful. Warm cream, a purple accent, chunky tinted cards with extra-round corners and a round add button.',
+    brand: '#7c3aed',
+    ink: '#1e1b4b',
+    surface: '#fffbeb',
+    headingFont: 'poppins',
+    bodyFont: 'poppins',
+    radius: 'round',
+    uppercase: false,
+    headingWeight: 0,
+    layout: { card: 'tile', grid: 'grid', columns: 4, footer: 'light', hero: 'compact', search: false },
   },
 }
 
@@ -256,7 +320,7 @@ const STORAGE_KEY = 'store_theme'
 
 export function readStoredTheme() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    const raw = localStorage.getItem(storeKey(STORAGE_KEY))
     const parsed = raw ? JSON.parse(raw) : null
     return parsed && typeof parsed === 'object' ? parsed : null
   } catch {
@@ -266,7 +330,7 @@ export function readStoredTheme() {
 
 export function storeTheme(theme) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(theme || {}))
+    localStorage.setItem(storeKey(STORAGE_KEY), JSON.stringify(theme || {}))
   } catch {
     // storage unavailable: the theme still works, it just may flash once
   }

@@ -4,7 +4,6 @@ import { useAuth } from '../../context/AuthContext'
 import { getAllOrders } from '../../services/orderService'
 import { getProducts } from '../../services/productService'
 import { getAllCustomers } from '../../services/authService'
-import { resetStoreData } from '../../services/adminService'
 import {
   ShoppingBagIcon,
   ClipboardDocumentListIcon,
@@ -81,25 +80,6 @@ function AdminDashboard() {
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     .slice(0, 5)
 
-const [resetOpen, setResetOpen] = useState(false)
-const [resetText, setResetText] = useState('')
-const [resetting, setResetting] = useState(false)
-const [resetResult, setResetResult] = useState(null)
-
-async function handleReset() {
-  setResetting(true)
-  try {
-    const result = await resetStoreData(resetText, user.token)
-    setResetResult(result)
-    setOrders([])
-    setCustomerCount(0)
-  } catch (err) {
-    setResetResult({ error: err.response?.data?.message || 'Reset failed' })
-  } finally {
-    setResetting(false)
-    setResetText('')
-  }
-}
   return (
     <div>
       <div className="mb-6">
@@ -107,14 +87,6 @@ async function handleReset() {
           Welcome back{user?.name ? `, ${user.name}` : ''}
         </h2>
         <p className="text-sm text-gray-500 mt-1">Here's what's happening with your store today.</p>
-      </div>
-      <div className="flex justify-end mb-4">
-        <button
-          onClick={() => setResetOpen(true)}
-          className="text-sm text-red-600 border border-red-200 px-3 py-1.5 rounded-md hover:bg-red-50"
-        >
-          Reset store data
-        </button>
       </div>
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
@@ -207,58 +179,6 @@ async function handleReset() {
           </div>
         )}
       </div>
-      {resetOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full">
-            <h3 className="font-bold text-lg text-red-600 mb-2">Reset store data</h3>
-            <p className="text-sm text-gray-600 mb-4">
-              This permanently deletes all orders and customer accounts. Products and admin accounts are
-              kept. This cannot be undone. Type <b>RESET STORE</b> below to confirm.
-            </p>
-
-            {resetResult ? (
-              <div className="text-sm mb-4">
-                {resetResult.error ? (
-                  <p className="text-red-600">{resetResult.error}</p>
-                ) : (
-                  <p className="text-green-700">
-                    Deleted {resetResult.deleted.orders} orders, {resetResult.deleted.customers} customer accounts.
-                  </p>
-                )}
-              </div>
-            ) : (
-              <input
-                value={resetText}
-                onChange={(e) => setResetText(e.target.value)}
-                placeholder="RESET STORE"
-                className="border rounded-md px-3 py-2 w-full mb-4 text-sm"
-              />
-            )}
-
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={() => {
-                  setResetOpen(false)
-                  setResetResult(null)
-                  setResetText('')
-                }}
-                className="px-4 py-2 rounded-md text-sm border"
-              >
-                Close
-              </button>
-              {!resetResult && (
-                <button
-                  onClick={handleReset}
-                  disabled={resetText !== 'RESET STORE' || resetting}
-                  className="px-4 py-2 rounded-md text-sm bg-red-600 text-white disabled:opacity-40"
-                >
-                  {resetting ? 'Resetting...' : 'Confirm reset'}
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

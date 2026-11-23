@@ -116,7 +116,7 @@ function AdminThemes() {
       )}
 
       {/* Templates */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
         {TEMPLATE_LIST.map((template) => {
           const selected = draft.template === template.id
           return (

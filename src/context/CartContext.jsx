@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react'
+import { storeKey } from '../utils/storeContext'
 
 const CartContext = createContext()
 
@@ -6,7 +7,7 @@ export function CartProvider({ children }) {
   // Initialize state directly from localStorage if it exists, otherwise default to []
   const [cartItems, setCartItems] = useState(() => {
     try {
-      const savedCart = localStorage.getItem('cartItems')
+      const savedCart = localStorage.getItem(storeKey('cartItems'))
       return savedCart ? JSON.parse(savedCart) : []
     } catch (error) {
       console.error('Failed to parse cart items from localStorage:', error)
@@ -19,7 +20,7 @@ export function CartProvider({ children }) {
   // Sync cartItems to localStorage whenever the cart state changes
   useEffect(() => {
     try {
-      localStorage.setItem('cartItems', JSON.stringify(cartItems))
+      localStorage.setItem(storeKey('cartItems'), JSON.stringify(cartItems))
     } catch (error) {
       console.error('Failed to save cart items to localStorage:', error)
     }

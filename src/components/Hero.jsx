@@ -101,7 +101,12 @@ function Hero({ onReady }) {
   }, [currentSlide, slides])
 
   // Full screen by default; some templates (like Fresh) use a shorter banner
-  const heroHeight = layout.hero === 'compact' ? 'min-h-[45vh] sm:h-[60vh]' : 'min-h-[60vh] sm:h-screen'
+  const heroHeight =
+    {
+      compact: 'min-h-[45vh] sm:h-[60vh]',
+      // Catalog: a short strip, so products show without scrolling
+      slim: 'min-h-[40vh] sm:min-h-[45vh] py-24',
+    }[layout.hero] || 'min-h-[60vh] sm:h-screen'
   const containerClass = `relative ${heroHeight} w-full overflow-hidden bg-gray-900 flex flex-col items-center justify-center text-center text-white`
 
   // Avoid flashing fallback content before the real slides arrive

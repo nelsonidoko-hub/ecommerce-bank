@@ -89,6 +89,23 @@ function OrderDetail() {
         </span>
       </div>
 
+
+      {(order.isPreOrder || order.customerNote) && (
+        <div className="mb-6 space-y-2">
+          {order.isPreOrder && (
+            <p className="rounded-md bg-amber-50 border border-amber-200 px-3 py-2 text-sm text-amber-900">
+              Pre-order: placed while the shop was closed. It will be started when the shop opens.
+            </p>
+          )}
+          {order.customerNote && (
+            <div className="rounded-md bg-gray-50 border px-3 py-2 text-sm">
+              <p className="font-semibold text-gray-900 mb-1">Your note</p>
+              <p className="text-gray-700 whitespace-pre-line break-words">{order.customerNote}</p>
+            </div>
+          )}
+        </div>
+      )}
+
       {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
 
       {order.status === 'pending' && !order.isPaid && (

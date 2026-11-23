@@ -1,6 +1,7 @@
 import { useParams } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import ProductCard from '../components/ProductCard'
+import ProductGrid from '../components/ProductGrid'
+import StoreSearchBar from '../components/StoreSearchBar'
 import { getProductsByCategory } from '../services/productService'
 import FeaturedCollection from '../components/FeaturedCollection'
 import slide from '../assets/img/slide-2.webp'
@@ -61,6 +62,7 @@ function CategoryPage() {
     <div>
       <div className="px-6 pt-18 md:px-10 py-8 font-poppins sm:pt-28">
         <h2 className="text-2xl font-bold mb-6 capitalize">{categoryName}</h2>
+        <StoreSearchBar />
 
         {/* Filter bar */}
         <div className="flex flex-wrap gap-4 mb-8 pb-4 border-b">
@@ -103,11 +105,7 @@ function CategoryPage() {
         {filteredProducts.length === 0 ? (
           <p className="text-gray-500">No products found matching your filters.</p>
         ) : (
-          <div className="grid grid-cols-1 min-[321px]:grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-4 gap-6 font-epilogue">
-            {filteredProducts.map((product) => (
-              <ProductCard key={product._id} product={product} />
-            ))}
-          </div>
+          <ProductGrid products={filteredProducts} />
         )}
 
         

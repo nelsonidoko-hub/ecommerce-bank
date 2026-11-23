@@ -58,6 +58,7 @@ function MyOrders() {
                   {new Date(o.createdAt).toLocaleDateString()} · {o.items.length} item(s) · ₦
                   {o.totalPrice.toLocaleString()}
                   {isPickup && <span className="ml-2 text-xs text-indigo-600">Store pickup</span>}
+                  {o.isPreOrder && <span className="ml-2 text-xs text-amber-700">Pre-order</span>}
                 </p>
               </Link>
             )

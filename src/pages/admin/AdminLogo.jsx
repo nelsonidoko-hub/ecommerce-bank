@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { getLogo, saveLogo } from '../../services/logoService'
 import { API_BASE } from '../../config'
+import { storeKey, storeHeaders } from '../../utils/storeContext'
 
 const UPLOAD_URL = `${API_BASE}/api/upload`
 const MAX_FILE_SIZE = 5 * 1024 * 1024
@@ -11,7 +12,7 @@ function AdminLogo() {
 
   const [imageUrl, setImageUrl] = useState('')
   const [previewUrl, setPreviewUrl] = useState('')
-  const [altText, setAltText] = useState('Abuja Store Logo')
+  const [altText, setAltText] = useState('Store logo')
 
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
@@ -37,7 +38,7 @@ function AdminLogo() {
 
         setImageUrl(currentUrl)
         setPreviewUrl(currentUrl)
-        setAltText(data.altText || 'Abuja Store Logo')
+        setAltText(data.altText || 'Store logo')
       } catch (err) {
         if (cancelled) return
 
@@ -48,7 +49,7 @@ function AdminLogo() {
         ) {
           setImageUrl('')
           setPreviewUrl('')
-          setAltText('Abuja Store Logo')
+          setAltText('Store logo')
         } else {
           setError(
             err.message || 'Could not load the current logo.'
@@ -89,7 +90,7 @@ function AdminLogo() {
       return
     }
 
-    const storedUser = localStorage.getItem('user')
+    const storedUser = localStorage.getItem(storeKey('user'))
     let user
 
     try {
@@ -116,6 +117,7 @@ function AdminLogo() {
       const response = await fetch(UPLOAD_URL, {
         method: 'POST',
         headers: {
+          ...storeHeaders(),
           Authorization: `Bearer ${user.token}`,
         },
         body: formData,
@@ -170,12 +172,12 @@ function AdminLogo() {
     setSaving(true)
 
     try {
-      const storedUser = JSON.parse(localStorage.getItem('user') || '{}')
+      const storedUser = JSON.parse(localStorage.getItem(storeKey('user')) || '{}')
 
         const savedLogo = await saveLogo(
         {
             imageUrl: imageUrl.trim(),
-            altText: altText.trim() || 'Abuja Store Logo',
+            altText: altText.trim() || 'Store logo',
         },
         storedUser.token
         )
@@ -217,7 +219,7 @@ function AdminLogo() {
         </h1>
 
         <p className="mt-2 text-sm text-gray-500">
-          Manage the logo displayed across your Abuja Store website.
+          Manage the logo displayed across your shop.
         </p>
       </div>
 
@@ -234,7 +236,7 @@ function AdminLogo() {
               {previewUrl ? (
                 <img
                   src={previewUrl}
-                  alt={altText || 'Abuja Store Logo'}
+                  alt={altText || 'Store logo'}
                   className="max-h-40 max-w-full object-contain"
                   onError={() => {
                     setError(
@@ -329,7 +331,7 @@ function AdminLogo() {
               type="text"
               value={altText}
               onChange={(event) => setAltText(event.target.value)}
-              placeholder="Abuja Store Logo"
+              placeholder="Shop logo"
               maxLength={150}
               disabled={uploading || saving}
               className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-gray-800 focus:ring-2 focus:ring-gray-200 disabled:bg-gray-100"

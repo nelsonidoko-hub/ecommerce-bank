@@ -7,6 +7,8 @@ const COLUMNS = {
   2: 'md:grid-cols-2',
   3: 'md:grid-cols-3',
   4: 'md:grid-cols-4',
+  // Catalog: three across on tablets, five on wide screens
+  5: 'md:grid-cols-3 lg:grid-cols-5',
 }
 
 // Lays a list of products out the way the chosen template asks:
@@ -28,7 +30,10 @@ function ProductGrid({ products = [] }) {
 
   return (
     <div
-      className={`grid grid-cols-1 min-[321px]:grid-cols-2 gap-3 md:gap-6 ${
+      className={`grid grid-cols-1 min-[321px]:grid-cols-2 ${
+        // dense cards sit closer together so more fit on screen
+        layout.card === 'compact' ? 'gap-2 md:gap-3' : 'gap-3 md:gap-6'
+      } ${
         COLUMNS[layout.columns] || COLUMNS[4]
       } font-epilogue`}
     >
