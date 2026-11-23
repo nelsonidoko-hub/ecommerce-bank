@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
+import SetupChecklist from '../../components/admin/SetupChecklist'
 import { getAllOrders } from '../../services/orderService'
 import { getProducts } from '../../services/productService'
 import { getAllCustomers } from '../../services/authService'
@@ -88,6 +89,9 @@ function AdminDashboard() {
         </h2>
         <p className="text-sm text-gray-500 mt-1">Here's what's happening with your store today.</p>
       </div>
+      {/* What's left before the shop goes live, and the Publish button */}
+      <SetupChecklist />
+
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
         <StatCard

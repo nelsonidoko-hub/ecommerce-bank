@@ -31,3 +31,8 @@ export const resetPassword = async (token, password) => {
   const response = await axios.post(`${API_URL}/reset-password`, { token, password })
   return response.data
 }
+// Swaps the one-time code from the platform site for a login on this shop
+export const exchangeCode = async (code) => {
+  const response = await axios.post(`${API_URL}/exchange-code`, { code })
+  return response.data
+}

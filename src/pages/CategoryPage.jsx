@@ -3,8 +3,6 @@ import { useState, useEffect } from 'react'
 import ProductGrid from '../components/ProductGrid'
 import StoreSearchBar from '../components/StoreSearchBar'
 import { getProductsByCategory } from '../services/productService'
-import FeaturedCollection from '../components/FeaturedCollection'
-import slide from '../assets/img/slide-2.webp'
 
 function CategoryPage() {
   const { categoryName } = useParams()
@@ -108,20 +106,7 @@ function CategoryPage() {
           <ProductGrid products={filteredProducts} />
         )}
 
-        
-
-        {/* <Footer /> */}
       </div>
-      <div className="w-full bg-gray-100 px-0">
-        <FeaturedCollection
-          products={products.slice(0, 4)}
-          image={slide}
-          title="KIDS ROCKING COLLECTION"
-          buttonText="VIEW" className="mb-20 text-center font-poppins"
-          buttonLink="/shop"
-        />
-      </div>
-
     </div>
   )
 }

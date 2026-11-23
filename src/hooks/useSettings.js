@@ -48,7 +48,7 @@ export const defaultSettings = {
     buttonLabel: 'Shop Now',
     buttonLink: '/shop',
   },
-  homeCategoryRow: { enabled: true, title: 'Best Shoes', category: 'shoes' },
+  homeCategoryRow: { enabled: true, title: 'Popular picks', category: '' },
   homeFeatured: {
     enabled: true,
     title: 'Featured collection',
@@ -57,16 +57,43 @@ export const defaultSettings = {
     buttonLink: '/shop',
     category: '',
   },
+  // The homepage sections (the server always sends these)
+  homeSections: [],
 }
 
 // One shared copy, so the navbar, footer and checkout make a single request
 let cached = null
 let pending = null
+const listeners = new Set()
+
+// The builder shows the shop in a frame with ?preview=1: it loads the owner's
+// unpublished draft, and the builder pushes every change straight in.
+export const isPreview =
+  typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('preview') === '1'
 
 // Call after saving in the admin so this tab shows the new values immediately
 export function setCachedSettings(next) {
   cached = next
-  storeTheme(next.theme)
+  if (!isPreview) storeTheme(next.theme)
+  listeners.forEach((fn) => fn(next))
+}
+
+if (isPreview && typeof window !== 'undefined') {
+  window.addEventListener('message', (event) => {
+    // Only from the builder in this same shop
+    if (event.origin !== window.location.origin) return
+    const msg = event.data
+    if (msg?.type !== 'builder:design') return
+    const base = cached || defaultSettings
+    setCachedSettings({
+      ...base,
+      theme: { ...base.theme, ...(msg.theme || {}) },
+      homeSections: Array.isArray(msg.homeSections) ? msg.homeSections : base.homeSections,
+      isPreview: true,
+    })
+  })
+  // Tell the builder we're ready for its latest changes
+  if (window.parent !== window) window.parent.postMessage({ type: 'builder:ready' }, window.location.origin)
 }
 
 export function useSettings() {
@@ -77,14 +104,30 @@ export function useSettings() {
   )
   const [loaded, setLoaded] = useState(Boolean(cached))
 
+  // Follow later changes (admin saves, the builder's live preview)
+  useEffect(() => {
+    const update = (next) => {
+      setSettings(next)
+      setLoaded(true)
+    }
+    listeners.add(update)
+    return () => listeners.delete(update)
+  }, [])
+
   useEffect(() => {
     if (cached) return
 
     if (!pending) {
-      pending = getSettings()
+      pending = getSettings({ preview: isPreview })
         .then((data) => {
+          // A design pushed by the builder before this arrived keeps its
+          // theme and sections; everything else (name, contact...) is real
+          if (cached?.isPreview) {
+            cached = { ...data, theme: cached.theme, homeSections: cached.homeSections, isPreview: true }
+            return cached
+          }
           cached = data
-          storeTheme(data.theme)
+          if (!isPreview) storeTheme(data.theme)
           return data
         })
         .catch((err) => {

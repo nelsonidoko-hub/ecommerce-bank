@@ -34,11 +34,12 @@ function AdminLogo() {
 
         if (cancelled) return
 
-        const currentUrl = data.imageUrl || ''
+        // No logo yet comes back as null
+        const currentUrl = data?.imageUrl || ''
 
         setImageUrl(currentUrl)
         setPreviewUrl(currentUrl)
-        setAltText(data.altText || 'Store logo')
+        setAltText(data?.altText || 'Store logo')
       } catch (err) {
         if (cancelled) return
 

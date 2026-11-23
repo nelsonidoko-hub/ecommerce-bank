@@ -39,13 +39,20 @@ export function AuthProvider({ children }) {
     localStorage.setItem(storeKey('user'), JSON.stringify(data))
   }
 
+  // Signs in with an account the server already returned (the one-time
+  // sign-in link from the platform site)
+  function signIn(data) {
+    setUser(data)
+    localStorage.setItem(storeKey('user'), JSON.stringify(data))
+  }
+
   function logout() {
     setUser(null)
     localStorage.removeItem(storeKey('user'))
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, setUser, loading: false, resetPassword }}>
+    <AuthContext.Provider value={{ user, login, register, logout, setUser, signIn, loading: false, resetPassword }}>
       {children}
     </AuthContext.Provider>
   )

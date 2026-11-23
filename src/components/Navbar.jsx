@@ -1,11 +1,11 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
-import logo from '../assets/img/logo.png'
-import yl from '../assets/img/yl_png_logo.avif'
 import { useState, useEffect } from 'react'
 import { getCategories } from '../services/categoryService'
 import { getLogo } from '../services/logoService'
+import { useSettings } from '../hooks/useSettings'
+import { homeSectionsOf } from '../utils/sections'
 import {
   Bars3Icon,
   XMarkIcon,
@@ -19,6 +19,8 @@ import {
 } from '@heroicons/react/24/outline'
 
 function Navbar() {
+  const { settings } = useSettings()
+  const storeName = settings.storeName
   const { user, logout } = useAuth()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
@@ -61,7 +63,9 @@ function Navbar() {
   }, [])
 
   const isHomePage = location.pathname === '/'
-  const showTransparent = isHomePage && !isScrolled
+  // See-through only over the banner slideshow, and only when it comes first
+  const heroFirst = homeSectionsOf(settings).find((sec) => sec.enabled !== false)?.type === 'hero'
+  const showTransparent = isHomePage && heroFirst && !isScrolled
   const textColor = showTransparent ? 'text-white' : 'text-gray-800'
 
   const { cartItems, toggleCart } = useCart()
@@ -140,11 +144,11 @@ function Navbar() {
 
         <div className="flex justify-center">
           <Link to="/" className="text-xl font-bold text-blue-600">
-            <img
-              src={logo?.imageUrl || yl}
-              alt={logo?.altText || 'Store logo'}
-              className="h-8 w-auto object-contain"
-            />
+            {logo?.imageUrl ? (
+              <img src={logo.imageUrl} alt={logo.altText || storeName || 'Shop logo'} className="h-8 w-auto object-contain" />
+            ) : (
+              <span className={`font-poppins text-lg font-bold ${showTransparent ? 'text-white' : 'text-gray-900'}`}>{storeName}</span>
+            )}
           </Link>
         </div>
 
@@ -235,11 +239,11 @@ function Navbar() {
           <Bars3Icon className={`h-6 w-6 ${showTransparent ? 'text-white' : 'text-gray-900'}`} />
         </button>
 
-        <img
-          src={logo?.imageUrl || yl}
-          alt={logo?.altText || 'Store logo'}
-          className="h-6 w-auto object-contain"
-        />
+        {logo?.imageUrl ? (
+          <img src={logo.imageUrl} alt={logo.altText || storeName || 'Shop logo'} className="h-6 w-auto object-contain" />
+        ) : (
+          <span className={`font-poppins text-base font-bold ${showTransparent ? 'text-white' : 'text-gray-900'}`}>{storeName}</span>
+        )}
 
         <div className="flex items-center gap-4">
           <button className={`p-1 ${textColor}`}>
@@ -271,7 +275,11 @@ function Navbar() {
           </button>
 
           <Link to="/" onClick={() => setIsMenuOpen(false)}>
-            <img src={yl} alt="Logo" className="h-6 object-contain" />
+            {logo?.imageUrl ? (
+              <img src={logo.imageUrl} alt={logo.altText || storeName || 'Shop logo'} className="h-6 object-contain" />
+            ) : (
+              <span className="font-poppins text-base font-bold text-gray-900">{storeName}</span>
+            )}
           </Link>
 
           <div className="flex items-center gap-3">

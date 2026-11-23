@@ -7,9 +7,7 @@ import { useStoreTheme } from '../hooks/useStoreTheme'
 import { getFooterPages } from '../services/pageService'
 import { DAY_ORDER, DAY_NAMES, describeDay } from '../utils/openingHours'
 import { useStoreStatus } from '../hooks/useStoreStatus'
-
-// The platform's name for the footer credit. Set VITE_PLATFORM_NAME on Vercel.
-const PLATFORM_NAME = import.meta.env?.VITE_PLATFORM_NAME || 'our platform'
+import { PLATFORM_NAME, platformUrl } from '../utils/storeContext'
 
 const fallbackResources = [
   { label: 'FAQ', to: '/faq' },
@@ -204,7 +202,9 @@ function Footer() {
             © {new Date().getFullYear()} {storeName}. All rights reserved.
             {/* Basic plan shops carry a small credit line; Pro removes it */}
             {storeStatus?.poweredBy && (
-              <span className="block text-xs opacity-70">Powered by {PLATFORM_NAME}</span>
+              <a href={platformUrl('/')} className="block text-xs opacity-70 hover:underline">
+                Powered by {PLATFORM_NAME}
+              </a>
             )}
           </p>
         </div>

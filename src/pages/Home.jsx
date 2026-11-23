@@ -1,24 +1,28 @@
-import { useState, useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
-import ProductCard from '../components/ProductCard'
-import ProductGrid from '../components/ProductGrid'
+import { useState, useEffect, useMemo } from 'react'
 import Hero from '../components/Hero'
-import FeaturedCollection from '../components/FeaturedCollection'
 import PageLoader from '../components/PageLoader'
-import b18 from '../assets/img/side-hero2.webp'
-import c2 from '../assets/img/c2.webp'
+import {
+  ProductsSection,
+  BannerSection,
+  FeaturedSection,
+  TextSection,
+  ImageTextSection,
+  TestimonialsSection,
+  WhatsAppSection,
+} from '../components/sections/Sections'
 import { getProducts, getProductsByCategory, getBestSellers } from '../services/productService'
 import { useSettings } from '../hooks/useSettings'
-import { ChevronLeftIcon, ChevronRightIcon, ArrowRightIcon } from '@heroicons/react/24/outline'
+import { homeSectionsOf } from '../utils/sections'
 
+// The homepage: whatever sections the merchant arranged in the builder, in
+// their order. Products are loaded once and shared between sections.
 function Home() {
   const { settings, loaded } = useSettings()
-  const { homeArrivals, homeBestSellers, homeBanner, homeCategoryRow, homeFeatured } = settings
+  const sections = useMemo(() => homeSectionsOf(settings).filter((s) => s.enabled !== false), [settings])
 
-  const [products, setProducts] = useState([])
-  const [sliderProducts, setSliderProducts] = useState([])
-  const [bestSellerProducts, setBestSellerProducts] = useState([])
-  const [featuredByCategory, setFeaturedByCategory] = useState(null)
+  const [newest, setNewest] = useState([])
+  const [bestSellers, setBestSellers] = useState([])
+  const [byCategory, setByCategory] = useState({})
 
   // Loading screen. It shows on the first visit of a browser session, until the
   // backend has answered. That also covers a slow wake-up on free hosting.
@@ -36,8 +40,9 @@ function Home() {
   const [slow, setSlow] = useState(false)
   const [gaveUp, setGaveUp] = useState(false)
 
+  const hasHero = sections.some((s) => s.type === 'hero')
   // A failed request still counts as "done", so the page can never hang on an error
-  const ready = loaded && productsReady && bestSellersReady && heroReady
+  const ready = loaded && productsReady && bestSellersReady && (heroReady || !hasHero)
 
   useEffect(() => {
     const timers = [
@@ -59,232 +64,84 @@ function Home() {
 
   const showLoader = firstVisit && !((ready && minElapsed) || gaveUp)
 
-  const [categoryRowProgress, setCategoryRowProgress] = useState(0)
-  const [bestSellerProgress, setBestSellerProgress] = useState(0)
-
-  const categoryRowRef = useRef(null)
-  const bestSellerRef = useRef(null)
-
-  // Products and best sellers don't depend on settings
   useEffect(() => {
     getProducts()
-      .then((data) => setProducts(Array.isArray(data) ? data : []))
+      .then((data) => {
+        const list = Array.isArray(data) ? data : []
+        setNewest([...list].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)))
+      })
       .catch((err) => console.error(err))
       .finally(() => setProductsReady(true))
 
     getBestSellers()
-      .then((data) => setBestSellerProducts(Array.isArray(data) ? data : []))
+      .then((data) => setBestSellers(Array.isArray(data) ? data : []))
       .catch((err) => console.error(err))
       .finally(() => setBestSellersReady(true))
   }, [])
 
-  // The category row follows whichever category the admin picked
-  useEffect(() => {
-    if (!loaded) return
-    const slug = homeCategoryRow.category
-    if (!homeCategoryRow.enabled || !slug) {
-      setSliderProducts([])
-      return
+  // Each category a section asks for, fetched once
+  const wanted = useMemo(() => {
+    const names = new Set()
+    for (const s of sections) {
+      if (s.type === 'products' && s.data?.source === 'category' && s.data.category) names.add(s.data.category)
+      if (s.type === 'featured' && s.data?.category) names.add(s.data.category)
     }
-    getProductsByCategory(slug)
-      .then((data) => setSliderProducts(Array.isArray(data) ? data : []))
-      .catch((err) => {
-        console.error(err)
-        setSliderProducts([])
-      })
-  }, [loaded, homeCategoryRow.enabled, homeCategoryRow.category])
+    return [...names]
+  }, [sections])
 
-  // Featured collection: a chosen category, or the newest products if none is chosen
   useEffect(() => {
-    if (!loaded) return
-    const slug = homeFeatured.category
-    if (!homeFeatured.enabled || !slug) {
-      setFeaturedByCategory(null)
-      return
+    for (const name of wanted) {
+      if (byCategory[name]) continue
+      setByCategory((prev) => ({ ...prev, [name]: [] }))
+      getProductsByCategory(name)
+        .then((data) => setByCategory((prev) => ({ ...prev, [name]: Array.isArray(data) ? data : [] })))
+        .catch(() => {})
     }
-    getProductsByCategory(slug)
-      .then((data) => setFeaturedByCategory(Array.isArray(data) ? data : null))
-      .catch(() => setFeaturedByCategory(null))
-  }, [loaded, homeFeatured.enabled, homeFeatured.category])
+  }, [wanted]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const newestProducts = [...products].sort(
-    (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-  )
-  const gridProducts = newestProducts.slice(0, Number(homeArrivals.count) || 8)
-  const featuredProducts = (featuredByCategory || newestProducts).slice(0, 4)
-
-  const handleCategoryRowScroll = () => {
-    const el = categoryRowRef.current
-    if (!el) return
-    const total = el.scrollWidth - el.clientWidth
-    if (total > 0) setCategoryRowProgress((el.scrollLeft / total) * 100)
+  function productsFor(data) {
+    if (data.source === 'bestsellers') return bestSellers
+    if (data.source === 'category') return byCategory[data.category] || []
+    return newest
   }
 
-  const handleBestSellerScroll = () => {
-    const el = bestSellerRef.current
-    if (!el) return
-    const total = el.scrollWidth - el.clientWidth
-    if (total > 0) setBestSellerProgress((el.scrollLeft / total) * 100)
+  function render(section) {
+    const data = section.data || {}
+    switch (section.type) {
+      case 'hero':
+        return <Hero key={section.id} onReady={() => setHeroReady(true)} />
+      case 'products':
+        return <ProductsSection key={section.id} data={data} products={productsFor(data)} />
+      case 'banner':
+        return <BannerSection key={section.id} data={data} />
+      case 'featured':
+        return (
+          <FeaturedSection
+            key={section.id}
+            data={data}
+            products={data.category ? byCategory[data.category] || [] : newest}
+            storeName={settings.storeName}
+          />
+        )
+      case 'text':
+        return <TextSection key={section.id} data={data} />
+      case 'imageText':
+        return <ImageTextSection key={section.id} data={data} storeName={settings.storeName} />
+      case 'testimonials':
+        return <TestimonialsSection key={section.id} data={data} />
+      case 'whatsapp':
+        return <WhatsAppSection key={section.id} data={data} whatsappNumber={settings.whatsappNumber} isPreview={settings.isPreview} />
+      default:
+        return null // a type this version doesn't know yet
+    }
   }
-
-  const scrollBestSellerScroll = (direction) => {
-    const el = bestSellerRef.current
-    if (!el) return
-    const scrollAmount = direction === 'left' ? -300 : 300
-    el.scrollBy({ left: scrollAmount, behavior: 'smooth' })
-  }
-
-  const bannerLinkIsExternal = /^https?:\/\//.test(homeBanner.buttonLink || '')
-  const bannerButtonClass =
-    'bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 flex items-center gap-2 mx-auto w-fit'
 
   return (
-    <div className="">
+    <div>
       <PageLoader show={showLoader} slow={slow} />
-      <Hero onReady={() => setHeroReady(true)} />
-      <div className="px-6 md:px-10">
-        {/* New arrivals */}
-        {homeArrivals.enabled && (
-          <div className="mt-12 mb-16 animate-fade-in">
-            <h2 className="text-2xl font-poppins mb-2">{homeArrivals.title}</h2>
-            {homeArrivals.subtitle && (
-              <p className="text-gray-500 font-epilogue mb-2">{homeArrivals.subtitle}</p>
-            )}
-            <ProductGrid products={gridProducts} />
-          </div>
-        )}
-
-        {/* Best sellers */}
-        {homeBestSellers.enabled && (
-          <div className="">
-            {homeBestSellers.label && (
-              <p className="text-center font-poppins mb-4">{homeBestSellers.label}</p>
-            )}
-            <h4 className="text-center text-2xl font-poppins uppercase mb-6">
-              {homeBestSellers.title}
-            </h4>
-            <div className="relative mt-6">
-              {/* angle left */}
-              <button
-                onClick={() => scrollBestSellerScroll('left')}
-                className="absolute left-2 top-40 translate-y-1/2 z-10 bg-white/80 hover:bg-white p-2 rounded-full shadow-md text-gray-800 transition-all"
-                aria-label="scroll left"
-              >
-                <ChevronLeftIcon className="w-10 h-10 cursor-pointer" />
-              </button>
-
-              {/* Carousel Scroll */}
-              <div
-                ref={bestSellerRef}
-                onScroll={handleBestSellerScroll}
-                className="flex overflow-x-auto gap-6 pb-2 snap-x snap-mandatory scrollbar-none scroll-smooth"
-              >
-                {bestSellerProducts.length === 0 ? (
-                  <p className="text-gray-500 text-2xl font-poppins mb-2">No Best Seller yet.</p>
-                ) : (
-                  bestSellerProducts.map((product) => (
-                    <div key={product._id} className="min-w-[250px] md:min-w-[300px] flex-shrink-0 snap-start">
-                      <ProductCard product={product} />
-                    </div>
-                  ))
-                )}
-              </div>
-
-              {/* angle Right */}
-              <button
-                onClick={() => scrollBestSellerScroll('right')}
-                className="absolute right-2 top-40 translate-y-1/2 z-10 bg-white/80 hover:bg-white p-2 rounded-full shadow-md text-gray-800 transition-all"
-                aria-label="scroll right"
-              >
-                <ChevronRightIcon className="w-10 h-10 cursor-pointer" />
-              </button>
-
-              <div className="w-100 bg-gray-400 m-auto h-0.5 rounded-full overflow-hidden mb-10">
-                <div
-                  className="bg-black h-full transition-all duration-150 ease-out rounded-full"
-                  style={{ width: `${Math.max(bestSellerProgress, 10)}%` }}
-                />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Promo banner */}
-        {homeBanner.enabled && (
-          <div
-            className="relative w-full h-64 md:h-80 rounded-lg font-poppins overflow-hidden mb-16 flex items-center justify-center text-center text-white bg-gray-900 bg-cover bg-center"
-            style={{ backgroundImage: `url(${homeBanner.image || c2})` }}
-          >
-            <div className="absolute inset-0 bg-black/30" />
-            <div className="relative z-10 px-6">
-              {homeBanner.heading && (
-                <h3 className="text-3xl font-bold mb-2">{homeBanner.heading}</h3>
-              )}
-              {homeBanner.text && <p className="mb-4">{homeBanner.text}</p>}
-              {homeBanner.buttonLabel &&
-                homeBanner.buttonLink &&
-                (bannerLinkIsExternal ? (
-                  <a
-                    href={homeBanner.buttonLink}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={bannerButtonClass}
-                  >
-                    {homeBanner.buttonLabel}
-                    <ArrowRightIcon className="h-5 w-5" />
-                  </a>
-                ) : (
-                  <Link to={homeBanner.buttonLink} className={bannerButtonClass}>
-                    {homeBanner.buttonLabel}
-                    <ArrowRightIcon className="h-5 w-5" />
-                  </Link>
-                ))}
-            </div>
-          </div>
-        )}
-
-        {/* Category row */}
-        {homeCategoryRow.enabled && homeCategoryRow.category && (
-          <>
-            <h2 className="text-2xl font-poppins mb-2">{homeCategoryRow.title}</h2>
-            <div className="relative mt-6">
-              <div
-                ref={categoryRowRef}
-                onScroll={handleCategoryRowScroll}
-                className="flex overflow-x-auto gap-6 pb-4 snap-x snap-mandatory scrollbar-none"
-              >
-                {sliderProducts.length === 0 ? (
-                  <p className="text-gray-500">No products in this category yet.</p>
-                ) : (
-                  sliderProducts.map((product) => (
-                    <div key={product._id} className="min-w-[250px] md:min-w-[300px] flex-shrink-0 snap-start">
-                      <ProductCard product={product} />
-                    </div>
-                  ))
-                )}
-              </div>
-
-              <div className="w-100 bg-gray-400 h-0.5 m-auto mb-20 rounded-full overflow-hidden mt-1">
-                <div
-                  className="bg-black h-full transition-all duration-150 ease-out rounded-full"
-                  style={{ width: `${Math.max(categoryRowProgress, 10)}%` }}
-                />
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Featured collection */}
-      {homeFeatured.enabled && (
-        <FeaturedCollection
-          products={featuredProducts}
-          image={homeFeatured.image || b18}
-          title={homeFeatured.title}
-          buttonText={homeFeatured.buttonLabel}
-          buttonLink={homeFeatured.buttonLink}
-        />
-      )}
+      {/* No banner slideshow: leave room for the navbar */}
+      {!hasHero && <div className="h-20 sm:h-28" />}
+      {sections.map(render)}
     </div>
   )
 }

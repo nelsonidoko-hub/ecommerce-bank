@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import logo from '../assets/img/yl_png_logo.avif'
 
 // Full-screen loading screen: a ring spinning around the logo.
 //   show - true while loading. Set it to false and the screen fades away.
@@ -33,7 +32,6 @@ function PageLoader({ show = true, slow = false }) {
     >
       <div className="relative h-24 w-24">
         <span className="absolute inset-0 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600" />
-        <img src={logo} alt="" className="absolute inset-0 m-auto h-11 w-11 object-contain" />
       </div>
 
       <p

@@ -1,5 +1,7 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useStoreStatus } from '../hooks/useStoreStatus'
+import { platformUrl } from '../utils/storeContext'
+import { TEMPLATES } from '../utils/themes'
 
 // Pages that must work even when the shop is closed, so its owner can sign in
 const ALWAYS_OPEN = ['/login', '/forgot-password', '/reset-password']
@@ -15,6 +17,27 @@ const OWNER_MESSAGES = {
 function StoreGate({ children }) {
   const status = useStoreStatus()
   const { pathname } = useLocation()
+
+  // A template demo: the real shop, plus a way to start one like it
+  if (status?.isDemo) {
+    const template = TEMPLATES[status.demoTemplate]
+    return (
+      <>
+        <div className="sticky top-0 z-[60] flex flex-wrap items-center justify-center gap-x-3 gap-y-1 bg-gray-900 px-4 py-2 text-center text-sm text-white">
+          <span>
+            You're viewing the <b>{template?.label || 'template'}</b> demo. Orders are switched off.
+          </span>
+          <a
+            href={platformUrl(`/signup?template=${encodeURIComponent(status.demoTemplate || 'classic')}`)}
+            className="rounded-md bg-white px-3 py-1 text-xs font-semibold text-gray-900 hover:bg-gray-100"
+          >
+            Start your shop with this design
+          </a>
+        </div>
+        {children}
+      </>
+    )
+  }
 
   // Still checking: show the shop as normal (no flash of a closed page)
   if (!status || status.live) return children

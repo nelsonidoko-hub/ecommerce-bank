@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom'
 import { useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
-import yl from '../../assets/img/yl_png_logo.avif'
+import { platformUrl, shopHref } from '../../utils/storeContext'
 import { useStoreStatus } from '../../hooks/useStoreStatus'
 
 import {
@@ -17,11 +17,13 @@ import {
   ArrowTopRightOnSquareIcon,
   VideoCameraIcon,
   Cog6ToothIcon,
-  HomeIcon,
   TicketIcon,
   DocumentTextIcon,
   CreditCardIcon,
   SwatchIcon,
+  BanknotesIcon,
+  GlobeAltIcon,
+  BuildingStorefrontIcon,
 } from '@heroicons/react/24/outline'
 
 const NAV_ITEMS = [
@@ -32,13 +34,40 @@ const NAV_ITEMS = [
   { label: 'Orders', to: '/admin/orders', icon: ClipboardDocumentListIcon },
   { label: 'Customers', to: '/admin/customers', icon: UsersIcon },
   { label: 'Hero Banner', to: '/admin/hero', icon: VideoCameraIcon },
-  { label: 'Homepage', to: '/admin/homepage', icon: HomeIcon },
-  { label: 'Themes', to: '/admin/themes', icon: SwatchIcon },
+  { label: 'Builder', to: '/admin/builder', icon: SwatchIcon },
   { label: 'Discounts', to: '/admin/discounts', icon: TicketIcon },
   { label: 'Pages', to: '/admin/pages', icon: DocumentTextIcon },
   { label: 'Payments', to: '/admin/payments', icon: CreditCardIcon },
+  { label: 'Billing', to: '/admin/billing', icon: BanknotesIcon },
+  { label: 'Domain', to: '/admin/domain', icon: GlobeAltIcon },
+  { label: 'Market Square', to: '/admin/market', icon: BuildingStorefrontIcon },
   { label: 'Settings', to: '/admin/settings', icon: Cog6ToothIcon },
 ]
+
+// A line at the top of every admin page when the plan needs attention
+export function BillingBanner({ manage }) {
+  if (!manage) return null
+  const until = manage.until ? new Date(manage.until) : null
+  const daysLeft = until ? Math.max(0, Math.ceil((until - Date.now()) / 86400000)) : null
+  const date = until?.toLocaleDateString('en-NG', { day: 'numeric', month: 'long' })
+  let text = ''
+  let tone = 'border-amber-200 bg-amber-50 text-amber-900'
+  if (manage.state === 'trial' && daysLeft !== null && daysLeft <= 3) {
+    text = `Your free trial ends ${daysLeft === 0 ? 'today' : `in ${daysLeft} day${daysLeft === 1 ? '' : 's'}`}. Choose a plan to stay open.`
+  } else if (manage.state === 'grace') {
+    text = `Your payment is overdue. Your shop closes on ${date} unless you pay.`
+  } else if (manage.state === 'paused') {
+    text = 'Your shop is paused and hidden from customers. Pay for a plan to reopen it.'
+    tone = 'border-red-200 bg-red-50 text-red-800'
+  }
+  if (!text) return null
+  return (
+    <div className={`-mx-4 -mt-4 mb-4 flex flex-wrap items-center justify-between gap-2 border-b px-4 py-2.5 text-sm sm:-mx-6 sm:-mt-6 sm:mb-6 sm:px-6 ${tone}`}>
+      <span>{text}</span>
+      <Link to="/admin/billing" className="font-semibold underline">Go to billing</Link>
+    </div>
+  )
+}
 
 function AdminLayout() {
   const storeStatus = useStoreStatus()
@@ -68,11 +97,9 @@ function AdminLayout() {
       {/* Sidebar branding */}
       <div className="flex h-16 items-center gap-3 border-b border-gray-800 px-5">
         <Link to="/" aria-label="Shop home">
-          <img
-            src={yl}
-            alt="Shop logo"
-            className="h-7 w-auto object-contain"
-          />
+          <span className="flex h-8 w-8 items-center justify-center rounded-md bg-white font-poppins text-sm font-bold text-gray-900">
+            {(storeStatus?.name || 'S').slice(0, 1).toUpperCase()}
+          </span>
         </Link>
 
         <span className="rounded bg-gray-800 px-2 py-1 text-xs font-semibold uppercase tracking-wide text-gray-300">
@@ -111,13 +138,22 @@ function AdminLayout() {
       {/* Bottom actions */}
       <div className="space-y-1 border-t border-gray-800 px-3 pb-4 pt-4">
         <a
-          href="/"
+          href={shopHref('/')}
           target="_blank"
           rel="noreferrer"
           className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-300 transition hover:bg-gray-800 hover:text-white"
         >
           <ArrowTopRightOnSquareIcon className="h-5 w-5 shrink-0" />
           View Storefront
+        </a>
+
+        {/* Back to the platform site, where a merchant sees all their shops */}
+        <a
+          href={platformUrl('/dashboard')}
+          className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-300 transition hover:bg-gray-800 hover:text-white"
+        >
+          <Squares2X2Icon className="h-5 w-5 shrink-0" />
+          All my shops
         </a>
 
         <button
@@ -207,6 +243,7 @@ function AdminLayout() {
 
         {/* Nested admin page */}
         <main className="min-h-[calc(100vh-4rem)] p-4 sm:p-6">
+          <BillingBanner manage={storeStatus?.manage} />
           <Outlet />
         </main>
       </div>

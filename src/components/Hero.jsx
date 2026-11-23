@@ -1,44 +1,27 @@
 import { Link } from 'react-router-dom'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { ArrowRightIcon } from '@heroicons/react/24/outline'
 import { getHeroSlides } from '../services/heroService'
 import { useStoreTheme } from '../hooks/useStoreTheme'
+import { useSettings } from '../hooks/useSettings'
+import { placeholderPicture } from '../utils/placeholderPicture'
 import OpenStatusBadge from './OpenStatusBadge'
-import bag1 from '../assets/img/bag-hero1.webp'
-import bag2 from '../assets/img/bag-hero2.webp'
-import bag3 from '../assets/img/bag-hero4.webp'
 
-// Shown only when no slides have been added in the admin panel yet,
-// so the homepage is never blank.
-const fallbackSlides = [
-  {
-    _id: 'fallback-1',
-    mediaType: 'image',
-    mediaUrl: bag1,
-    heading: 'Your Eyes Your Look',
-    text: 'Shop the new collection',
-    buttonLabel: 'Shop Now',
-    buttonLink: '/shop',
-  },
-  {
-    _id: 'fallback-2',
-    mediaType: 'image',
-    mediaUrl: bag2,
-    heading: 'Blue Cut Edges',
-    text: 'Gentle care for little ones',
-    buttonLabel: 'Shop Now',
-    buttonLink: '/shop',
-  },
-  {
-    _id: 'fallback-3',
-    mediaType: 'image',
-    mediaUrl: bag3,
-    heading: 'Everyday Eyes Styling',
-    text: 'Style meets function',
-    buttonLabel: 'Shop Now',
-    buttonLink: '/shop',
-  },
-]
+// Shown only when no slides have been added in the admin panel yet, so the
+// homepage is never blank: a plain banner with the shop's name.
+function fallbackSlides(storeName) {
+  return [
+    {
+      _id: 'fallback-1',
+      mediaType: 'image',
+      mediaUrl: placeholderPicture(storeName),
+      heading: storeName ? `Welcome to ${storeName}` : 'Welcome',
+      text: 'Shop the collection',
+      buttonLabel: 'Shop Now',
+      buttonLink: '/shop',
+    },
+  ]
+}
 
 const IMAGE_DURATION = 3000 // ms each image stays on screen
 const VIDEO_MAX_DURATION = 30000 // safety cap if a video stalls or is very long
@@ -62,19 +45,23 @@ function Hero({ onReady }) {
   const [loaded, setLoaded] = useState(false)
   const [currentSlide, setCurrentSlide] = useState(0)
   const { layout } = useStoreTheme()
+  const { settings } = useSettings()
+  // Read when the fallback is built (the slides load once, settings may arrive after)
+  const storeNameRef = useRef(settings.storeName)
+  storeNameRef.current = settings.storeName
 
   useEffect(() => {
     getHeroSlides()
       .then((data) => {
-        const list = Array.isArray(data) && data.length > 0 ? data : fallbackSlides
+        const list = Array.isArray(data) && data.length > 0 ? data : fallbackSlides(storeNameRef.current)
         setSlides(list)
         setCurrentSlide(0)
         return list
       })
       .catch((err) => {
         console.error(err)
-        setSlides(fallbackSlides)
-        return fallbackSlides
+        setSlides(fallbackSlides(storeNameRef.current))
+        return fallbackSlides(storeNameRef.current)
       })
       // Wait for the first picture, so the hero never appears as an empty dark box
       .then((list) => preloadFirstImage(list))
