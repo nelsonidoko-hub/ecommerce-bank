@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeftIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline'
 import ThemePreview from '../../../components/ThemePreview'
-import { TEMPLATE_LIST, isHex } from '../../../utils/themes'
+import { TEMPLATE_LIST, TEMPLATES, isHex } from '../../../utils/themes'
 import { getAccount, errorMessage } from '../../../services/platformService'
-import { getStudioTemplate, createStudioTemplate, updateStudioTemplate, setStudioStatus, deleteStudioTemplate } from '../../../services/studioService'
+import { getStudioTemplate, createStudioTemplate, updateStudioTemplate, setStudioStatus, deleteStudioTemplate, getStudioOptions, uploadStudioPicture } from '../../../services/studioService'
 import { forgetStudioGallery } from '../../usePlatformData'
 import { StudioOnly, StatusChip, PART_LABELS, recipeFromBuiltIn } from './shared'
 
@@ -72,7 +72,43 @@ function Colour({ label, value, onChange, optional }) {
   )
 }
 
-const blank = () => ({ key: '', label: '', bestFor: '', description: '', sampleSet: 'classic', recipe: recipeFromBuiltIn('classic') })
+const blank = () => ({ key: '', label: '', bestFor: '', description: '', sampleSet: 'classic', recipe: recipeFromBuiltIn('classic'), pictures: {}, builtIn: '' })
+
+// One photo slot: thumbnail, upload, remove
+function PhotoSlot({ label, url, onChange, disabled }) {
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  async function pick(e) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    setBusy(true)
+    setError('')
+    try {
+      onChange((await uploadStudioPicture(file)).url)
+    } catch (err) {
+      setError(errorMessage(err, 'Upload failed.'))
+    } finally {
+      setBusy(false)
+    }
+  }
+  return (
+    <div className="flex items-center gap-3 rounded-lg border border-slate-200 p-2">
+      <div className="h-12 w-12 shrink-0 overflow-hidden rounded-md bg-slate-100 bg-cover bg-center" style={url ? { backgroundImage: `url("${url}")` } : undefined} />
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium text-slate-800">{label}</p>
+        <p className={`text-xs ${error ? 'text-red-600' : 'text-slate-400'}`}>{error || (url ? 'Photo added' : 'Drawn picture for now')}</p>
+      </div>
+      <label className={`shrink-0 cursor-pointer rounded-md border border-slate-300 px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 ${disabled || busy ? 'pointer-events-none opacity-50' : ''}`}>
+        {busy ? 'Uploading…' : url ? 'Change' : 'Upload'}
+        <input type="file" accept="image/*" className="sr-only" disabled={disabled || busy} onChange={pick} />
+      </label>
+      {url && !disabled && (
+        <button type="button" onClick={() => onChange('')} className="shrink-0 text-xs text-slate-500 underline">Remove</button>
+      )}
+    </div>
+  )
+}
 
 function Editor() {
   const { id } = useParams()
@@ -85,13 +121,17 @@ function Editor() {
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [keyTouched, setKeyTouched] = useState(false)
+  const [options, setOptions] = useState(null)
+  useEffect(() => {
+    getStudioOptions().then(setOptions).catch(() => {})
+  }, [])
 
   useEffect(() => {
     if (isNew) return
     getStudioTemplate(id)
       .then((data) => {
         setSaved(data)
-        setT({ key: data.key, label: data.label, bestFor: data.bestFor, description: data.description, sampleSet: data.sampleSet, recipe: data.recipe })
+        setT({ key: data.key, label: data.label, bestFor: data.bestFor, description: data.description, sampleSet: data.sampleSet, recipe: data.recipe, pictures: data.pictures || {}, builtIn: data.builtIn || '' })
       })
       .catch((err) => setError(errorMessage(err, 'Could not load this template.')))
   }, [id, isNew])
@@ -102,6 +142,10 @@ function Editor() {
   const setRecipe = (patch) => setT({ ...t, recipe: { ...r, ...patch } })
   const setLayout = (patch) => setRecipe({ layout: { ...r.layout, ...patch } })
   const locked = saved?.status === 'published' && !founder
+  const pics = t.pictures || {}
+  const setPicture = (slot, url) => setT({ ...t, pictures: { ...pics, [slot]: url } })
+  const setProductPicture = (name, url) => setT({ ...t, pictures: { ...pics, products: { ...(pics.products || {}), [name]: url } } })
+  const sampleNames = options?.sampleProducts?.[t.sampleSet] || []
 
   async function run(kind, fn, done) {
     setBusy(kind)
@@ -133,10 +177,15 @@ function Editor() {
       <div className="order-2 space-y-4 lg:order-1">
         {error && <p className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
         {notice && <p className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">{notice}</p>}
+        {t.builtIn && (
+          <p className="rounded-lg border border-sky-200 bg-sky-50 p-3 text-sm text-sky-900">
+            You're editing the built-in <b>{TEMPLATES[t.builtIn]?.label}</b> template. Once published, every shop using it gets this look. "Reset to original" brings the original back.
+          </p>
+        )}
         {locked && <p className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">This template is in the gallery. Only the founder can change it now.</p>}
 
         <fieldset disabled={locked || Boolean(busy)} className="space-y-4">
-          {isNew && (
+          {isNew && !t.builtIn && (
             <Section title="Start from" hint="Copies a built-in template's look. Then change anything below.">
               <select aria-label="Start from" className={input} defaultValue="classic" onChange={(e) => setT({ ...t, recipe: recipeFromBuiltIn(e.target.value), sampleSet: e.target.value })}>
                 {TEMPLATE_LIST.map((b) => <option key={b.id} value={b.id}>{b.label} ({b.bestFor})</option>)}
@@ -152,7 +201,7 @@ function Editor() {
               </div>
               <div>
                 <label htmlFor="key" className="mb-1 block text-xs font-medium text-slate-700">Short name (can't change later)</label>
-                <input id="key" disabled={!isNew} maxLength={30} className={`${input} font-mono disabled:bg-slate-50`} placeholder="luxe" value={t.key} onChange={(e) => { setKeyTouched(true); setT({ ...t, key: slugify(e.target.value) }) }} />
+                <input id="key" disabled={!isNew || Boolean(t.builtIn)} maxLength={30} className={`${input} font-mono disabled:bg-slate-50`} placeholder="luxe" value={t.key} onChange={(e) => { setKeyTouched(true); setT({ ...t, key: slugify(e.target.value) }) }} />
               </div>
             </div>
             <div>
@@ -169,6 +218,20 @@ function Editor() {
             <select aria-label="Sample products" className={input} value={t.sampleSet} onChange={(e) => setT({ ...t, sampleSet: e.target.value })}>
               {Object.entries(SAMPLE_SETS).map(([k, label]) => <option key={k} value={k}>{label}</option>)}
             </select>
+          </Section>
+
+          <Section
+            title="Photos (optional)"
+            hint="Real photos make the template easier to imagine. New shops and the demo shop start with them; anything without a photo gets a drawn picture. Use your own photos or free-licence stock (e.g. Unsplash, Pexels), never pictures copied from other shops or Google. Up to 5 MB each."
+          >
+            <div className="grid gap-2 sm:grid-cols-2">
+              <PhotoSlot label="Top banner (big picture)" url={pics.hero} onChange={(u) => setPicture('hero', u)} disabled={locked} />
+              <PhotoSlot label="Middle banner" url={pics.banner} onChange={(u) => setPicture('banner', u)} disabled={locked} />
+              <PhotoSlot label="Featured picture" url={pics.featured} onChange={(u) => setPicture('featured', u)} disabled={locked} />
+              {sampleNames.map((name) => (
+                <PhotoSlot key={name} label={name} url={pics.products?.[name]} onChange={(u) => setProductPicture(name, u)} disabled={locked} />
+              ))}
+            </div>
           </Section>
 
           <Section title="Colours">
@@ -264,17 +327,17 @@ function Editor() {
               Back to draft
             </button>
           )}
-          {!isNew && saved?.status !== 'published' && (founder || saved?.status !== 'hidden') && (
+          {!isNew && (t.builtIn ? founder || !['published', 'hidden'].includes(saved?.status) : saved?.status !== 'published' && (founder || saved?.status !== 'hidden')) && (
             <button
               type="button"
               disabled={Boolean(busy)}
               onClick={async () => {
-                if (!window.confirm('Delete this template?')) return
+                if (!window.confirm(t.builtIn ? 'Reset to the original? Shops using it go back to the original look.' : 'Delete this template?')) return
                 if (await run('delete', () => deleteStudioTemplate(id), 'Deleted.')) navigate('/studio')
               }}
               className="ml-auto rounded-lg px-3 py-2 text-sm text-red-600 hover:underline disabled:opacity-50"
             >
-              Delete
+              {t.builtIn ? 'Reset to original' : 'Delete'}
             </button>
           )}
         </div>
@@ -287,7 +350,7 @@ function Editor() {
             {saved && <StatusChip status={saved.status} />}
           </div>
           <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-            <ThemePreview theme={{ template: t.key || 'new', recipe: r, sampleSet: t.sampleSet }} />
+            <ThemePreview theme={{ template: t.key || 'new', recipe: r, sampleSet: t.sampleSet, pictures: pics }} />
           </div>
           {saved && (
             <p className="mt-2 text-xs text-slate-500">

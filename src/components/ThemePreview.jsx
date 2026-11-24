@@ -25,9 +25,12 @@ function ThemePreview({ theme, compact = false }) {
   // Dummy products with pictures that show what they are, matched to the
   // kind of shop, so anyone can tell at a glance what the template is for
   const set = previewSet(theme?.sampleSet || (TEMPLATES[theme?.template] ? theme.template : 'classic'))
-  const products = set.products.map(([name, price, note]) => ({ name, price, note, icon: pictureIcon(name) }))
+  // Real photos from the Template Studio, where the template has them
+  const photos = theme?.pictures && typeof theme.pictures === 'object' ? theme.pictures : {}
+  const products = set.products.map(([name, price, note]) => ({ name, price, note, icon: pictureIcon(name), photo: photos.products?.[name] || '' }))
   const tint = resolved.brand || '#155dfc'
   const pictureStyle = { background: `linear-gradient(135deg, ${tint}22, ${tint}55)` }
+  const photoStyle = (url) => ({ backgroundImage: `url("${url}")`, backgroundSize: 'cover', backgroundPosition: 'center' })
   const iconSize = compact ? 'text-[14px]' : 'text-3xl'
   // Dense templates show four across in the preview, the rest three
   const shown = layout.columns >= 5 ? products : products.slice(0, 3)
@@ -101,8 +104,8 @@ function ThemePreview({ theme, compact = false }) {
       </div>
 
       {/* Banner */}
-      <div className={`bg-gray-700 text-center text-white ${bannerPad}`}>
-        <p className={compact ? 'text-[10px] leading-none' : 'text-2xl leading-none'}>{products.slice(0, 3).map((p) => p.icon).join(' ')}</p>
+      <div className={`bg-gray-700 text-center text-white ${bannerPad}`} style={photos.hero ? { ...photoStyle(photos.hero), boxShadow: 'inset 0 0 0 999px rgba(0,0,0,0.35)' } : undefined}>
+        {!photos.hero && <p className={compact ? 'text-[10px] leading-none' : 'text-2xl leading-none'}>{products.slice(0, 3).map((p) => p.icon).join(' ')}</p>}
         <h2 className={`font-poppins mt-1 font-bold ${headline}`}>{set.banner}</h2>
         <p className="mt-1 opacity-80">Shop the new collection</p>
         <span
@@ -126,9 +129,9 @@ function ThemePreview({ theme, compact = false }) {
             >
               <div
                 className={`flex shrink-0 items-center justify-center rounded-md ${compact ? 'h-5 w-5 text-[10px]' : 'h-10 w-10 text-xl'}`}
-                style={pictureStyle}
+                style={product.photo ? photoStyle(product.photo) : pictureStyle}
               >
-                {product.icon}
+                {!product.photo && product.icon}
               </div>
               <div className="min-w-0 flex-1">
                 <h3 className="font-epilogue truncate font-semibold">{product.name}</h3>
@@ -158,8 +161,8 @@ function ThemePreview({ theme, compact = false }) {
           <div className={`grid ${gridCols} ${layout.card === 'compact' ? 'gap-1' : 'gap-2'}`}>
             {shown.map((product) => (
               <div key={product.name} className={cardClass}>
-                <div className={`${imageClass} flex items-center justify-center ${iconSize}`} style={pictureStyle}>
-                  {product.icon}
+                <div className={`${imageClass} flex items-center justify-center ${iconSize}`} style={product.photo ? photoStyle(product.photo) : pictureStyle}>
+                  {!product.photo && product.icon}
                 </div>
                 {layout.card === 'compact' ? (
                   <>

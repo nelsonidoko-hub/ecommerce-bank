@@ -235,6 +235,7 @@ export function recipeTemplate(id, recipe, meta = {}) {
     bestFor: meta.bestFor || '',
     description: meta.description || '',
     sampleSet: meta.sampleSet || 'classic',
+    pictures: meta.pictures && typeof meta.pictures === 'object' ? meta.pictures : null,
     studio: true,
     brand: colour(recipe.brand),
     ink: colour(recipe.ink),
@@ -260,7 +261,8 @@ export const CARD_STYLES = ['standard', 'borderless', 'bordered', 'menu', 'compa
 
 export function resolveTheme(saved) {
   const s = saved && typeof saved === 'object' ? saved : {}
-  const base = TEMPLATES[s.template] || recipeTemplate(s.template, s.recipe) || TEMPLATES.classic
+  // A recipe from the server wins: a Studio template, or an edited built-in
+  const base = recipeTemplate(s.template, s.recipe) || TEMPLATES[s.template] || TEMPLATES.classic
 
   return {
     template: base.id,

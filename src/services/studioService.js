@@ -14,3 +14,10 @@ export const updateStudioTemplate = async (id, values) => (await axios.put(`${AP
 // status: review | draft | published | hidden
 export const setStudioStatus = async (id, status) => (await axios.post(`${API}/${id}/status`, { status }, auth())).data
 export const deleteStudioTemplate = async (id) => (await axios.delete(`${API}/${id}`, auth())).data
+
+// Upload a photo for a template -> { url }
+export const uploadStudioPicture = async (file) => {
+  const form = new FormData()
+  form.append('image', file)
+  return (await axios.post(`${API}/upload`, form, auth())).data
+}

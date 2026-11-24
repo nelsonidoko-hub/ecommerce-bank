@@ -1,10 +1,52 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { PlusIcon } from '@heroicons/react/24/outline'
 import ThemePreview from '../../../components/ThemePreview'
-import { listStudio } from '../../../services/studioService'
+import { listStudio, createStudioTemplate } from '../../../services/studioService'
+import { TEMPLATE_LIST } from '../../../utils/themes'
 import { errorMessage } from '../../../services/platformService'
-import { StudioOnly, StatusChip } from './shared'
+import { StudioOnly, StatusChip, recipeFromBuiltIn } from './shared'
+
+// The 8 built-in templates: open an edited version, or start one
+function BuiltIns({ edits, onError }) {
+  const navigate = useNavigate()
+  const [busy, setBusy] = useState('')
+  async function startEdit(t) {
+    setBusy(t.id)
+    try {
+      const made = await createStudioTemplate({ builtIn: t.id, label: t.label, bestFor: t.bestFor, description: t.description, sampleSet: t.id, recipe: recipeFromBuiltIn(t.id), pictures: {} })
+      navigate(`/studio/${made._id}`)
+    } catch (err) {
+      onError(errorMessage(err))
+      setBusy('')
+    }
+  }
+  return (
+    <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+      {TEMPLATE_LIST.map((t) => {
+        const e = edits.find((x) => x.builtIn === t.id)
+        return (
+          <div key={t.id}>
+            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+              <ThemePreview theme={e ? { template: t.id, recipe: e.recipe, sampleSet: e.sampleSet, pictures: e.pictures } : { template: t.id }} compact />
+            </div>
+            <div className="mt-1.5 flex items-center justify-between gap-1">
+              <span className="text-sm font-semibold text-slate-900">{t.label}</span>
+              {e ? <StatusChip status={e.status} /> : <span className="text-[11px] text-slate-400">Original</span>}
+            </div>
+            {e ? (
+              <Link to={`/studio/${e._id}`} className="mt-1 block text-sm font-medium text-emerald-700">Open edited version</Link>
+            ) : (
+              <button type="button" disabled={Boolean(busy)} onClick={() => startEdit(t)} className="mt-1 text-sm font-medium text-emerald-700 disabled:opacity-50">
+                {busy === t.id ? 'Opening…' : 'Edit'}
+              </button>
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
 
 // All Template Studio templates, newest first
 function List() {
@@ -14,9 +56,26 @@ function List() {
     listStudio().then(setData).catch((err) => setError(errorMessage(err, 'Could not load templates.')))
   }, [])
 
-  if (error) return <p className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>
-  if (!data) return <p className="text-slate-500">Loading…</p>
-  if (!data.templates.length) {
+  if (!data) return error ? <p className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p> : <p className="text-slate-500">Loading…</p>
+  const mine = data.templates.filter((t) => !t.builtIn)
+  return (
+    <div className="space-y-10">
+      {error && <p className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+      <section>
+        <h2 className="font-poppins text-lg font-semibold text-slate-900">Built-in templates</h2>
+        <p className="mb-4 text-sm text-slate-500">Edit their look and add real photos. Published edits replace the original everywhere; "Reset to original" brings it back.</p>
+        <BuiltIns edits={data.templates.filter((t) => t.builtIn)} onError={setError} />
+      </section>
+      <section>
+        <h2 className="mb-4 font-poppins text-lg font-semibold text-slate-900">New templates</h2>
+        <NewOnes templates={mine} />
+      </section>
+    </div>
+  )
+}
+
+function NewOnes({ templates }) {
+  if (!templates.length) {
     return (
       <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center">
         <p className="font-medium text-slate-800">No templates yet</p>
@@ -26,10 +85,10 @@ function List() {
   }
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {data.templates.map((t) => (
+      {templates.map((t) => (
         <Link key={t._id} to={`/studio/${t._id}`} className="group block">
           <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm group-hover:shadow-md">
-            <ThemePreview theme={{ template: t.key, recipe: t.recipe, sampleSet: t.sampleSet }} compact />
+            <ThemePreview theme={{ template: t.key, recipe: t.recipe, sampleSet: t.sampleSet, pictures: t.pictures }} compact />
           </div>
           <div className="mt-2 flex items-center justify-between gap-2">
             <h3 className="font-poppins font-semibold text-slate-900">{t.label}</h3>

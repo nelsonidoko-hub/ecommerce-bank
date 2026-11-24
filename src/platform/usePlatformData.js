@@ -38,16 +38,18 @@ export function useAllTemplates() {
   useEffect(() => {
     if (studioCache) return
     getStudioGallery()
-      .then((list) => setStudio((studioCache = list.map((t) => recipeTemplate(t.id, t.recipe, t)).filter(Boolean))))
+      .then((list) => setStudio((studioCache = list.map((t) => ({ ...recipeTemplate(t.id, t.recipe, t), builtIn: t.builtIn || '' })).filter((t) => t.layout))))
       .catch(() => setStudio([]))
   }, [])
-  return [...TEMPLATE_LIST, ...studio]
+  // An edited built-in takes the original's place; new ones go after the 8
+  const edited = new Map(studio.filter((t) => t.builtIn).map((t) => [t.builtIn, t]))
+  return [...TEMPLATE_LIST.map((t) => edited.get(t.id) || t), ...studio.filter((t) => !t.builtIn)]
 }
 export const forgetStudioGallery = () => {
   studioCache = null
 }
 
 // What ThemePreview needs to draw any template (built-in or Studio)
-export const previewTheme = (t) => ({ template: t.id, recipe: t.studio ? t : undefined, sampleSet: t.sampleSet })
+export const previewTheme = (t) => ({ template: t.id, recipe: t.studio ? t : undefined, sampleSet: t.sampleSet, pictures: t.pictures })
 
 export const naira = (n) => `₦${Number(n || 0).toLocaleString('en-NG')}`
