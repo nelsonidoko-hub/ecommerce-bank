@@ -12,6 +12,8 @@ import { Terms, AcceptableUse } from './pages/Legal'
 import FounderHome from './pages/founder/FounderHome'
 import FounderShop from './pages/founder/FounderShop'
 import Market from './pages/Market'
+import StudioList from './pages/studio/StudioList'
+import StudioEditor from './pages/studio/StudioEditor'
 
 // The platform's own site (yourplatform.com). Shops are a separate app (App.jsx).
 function PlatformApp() {
@@ -27,6 +29,9 @@ function PlatformApp() {
         <Route path="/forgot-password" element={<PlatformForgot />} />
         <Route path="/reset-password/:token" element={<PlatformReset />} />
         <Route path="/market" element={<Market />} />
+        <Route path="/studio" element={<StudioList />} />
+        <Route path="/studio/new" element={<StudioEditor />} />
+        <Route path="/studio/:id" element={<StudioEditor />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/acceptable-use" element={<AcceptableUse />} />
         <Route path="/founder" element={<FounderHome />} />

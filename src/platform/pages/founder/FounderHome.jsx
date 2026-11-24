@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
-import { getOverview, listShops } from '../../../services/founderService'
+import { getOverview, listShops, listTeam, addDesigner, removeDesigner } from '../../../services/founderService'
 import { errorMessage, saveAccount } from '../../../services/platformService'
 import { FounderOnly, StateChip, STATES, ACTION_LABELS, REPORT_REASONS, naira, day } from './shared'
 
@@ -223,10 +223,68 @@ function Shops() {
   )
 }
 
+// The platform team: who can use the Template Studio
+function Team() {
+  const [team, setTeam] = useState(null)
+  const [email, setEmail] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const load = () => listTeam().then(setTeam).catch((err) => setError(errorMessage(err, 'Could not load the team.')))
+  useEffect(() => {
+    load()
+  }, [])
+
+  async function add(e) {
+    e.preventDefault()
+    setBusy(true)
+    setError('')
+    try {
+      await addDesigner(email)
+      setEmail('')
+      await load()
+    } catch (err) {
+      setError(errorMessage(err))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="max-w-2xl space-y-4">
+      <p className="text-sm text-slate-600">
+        Designers can make templates in the <Link to="/studio" className="font-semibold text-emerald-700">Template Studio</Link> and send them to you for
+        review. They can't see money, shops or customers. They need a platform account first (they can sign up), then
+        log out and in again after you add them.
+      </p>
+      <form onSubmit={add} className="flex gap-2">
+        <input type="email" required aria-label="Designer's email" placeholder="Their account email" className="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm" value={email} onChange={(e) => setEmail(e.target.value)} />
+        <button type="submit" disabled={busy} className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">{busy ? 'Adding…' : 'Add designer'}</button>
+      </form>
+      {error && <p className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+      <List title="Team" empty="Nobody yet.">
+        {(team || []).map((u) => (
+          <li key={u._id} className="flex items-center justify-between gap-3 py-2">
+            <span className="min-w-0 truncate">
+              <span className="font-medium text-slate-900">{u.name}</span> <span className="text-slate-500">· {u.email}</span>
+            </span>
+            {u.founder ? (
+              <span className="text-xs font-semibold text-slate-500">Founder</span>
+            ) : (
+              <button type="button" className="text-sm text-red-600 hover:underline" onClick={async () => { await removeDesigner(u._id).catch(() => {}); load() }}>
+                Remove
+              </button>
+            )}
+          </li>
+        ))}
+      </List>
+    </div>
+  )
+}
+
 // The founder's view of the whole platform
 function FounderHome() {
   const [params, setParams] = useSearchParams()
-  const tab = params.get('tab') === 'shops' ? 'shops' : 'overview'
+  const tab = ['shops', 'team'].includes(params.get('tab')) ? params.get('tab') : 'overview'
   const tabClass = (t) =>
     `border-b-2 px-1 pb-2 text-sm font-semibold ${tab === t ? 'border-emerald-600 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-800'}`
 
@@ -239,8 +297,9 @@ function FounderHome() {
           <div className="mt-6 flex gap-6 border-b border-slate-200">
             <button type="button" className={tabClass('overview')} onClick={() => setParams({})}>Overview</button>
             <button type="button" className={tabClass('shops')} onClick={() => setParams({ tab: 'shops' })}>Shops</button>
+            <button type="button" className={tabClass('team')} onClick={() => setParams({ tab: 'team' })}>Team</button>
           </div>
-          <div className="mt-6">{tab === 'shops' ? <Shops /> : <Overview />}</div>
+          <div className="mt-6">{tab === 'shops' ? <Shops /> : tab === 'team' ? <Team /> : <Overview />}</div>
         </div>
       </section>
     </FounderOnly>

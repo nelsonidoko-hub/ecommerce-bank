@@ -1,10 +1,12 @@
 import { useMemo } from 'react'
-import { resolveTheme, themeStyle, themeClasses } from '../utils/themes'
+import { resolveTheme, themeStyle, themeClasses, TEMPLATES } from '../utils/themes'
+import { pictureIcon, previewSet } from '../utils/pictureIcons'
 
 // A small mock of the storefront (menu, banner, products, footer). It uses the
 // same classes and the same kind of wrapper as the real store, so the colours,
 // fonts, corners and layout here are what customers will see.
 //   theme   - the saved-theme shape: { template, brandColor, headingFont, bodyFont, radius }
+//             plus, for Template Studio templates, { recipe, sampleSet }
 //   compact - smaller text, for the template thumbnails
 function ThemePreview({ theme, compact = false }) {
   const resolved = useMemo(() => resolveTheme(theme), [theme])
@@ -20,12 +22,13 @@ function ThemePreview({ theme, compact = false }) {
     slim: compact ? 'px-3 py-1.5' : 'px-6 py-4',
   }[layout.hero] || (compact ? 'px-3 py-4' : 'px-6 py-10')
 
-  const products = [
-    { name: 'Linen Shirt', price: '₦12,000', note: 'Soft and light' },
-    { name: 'Canvas Tote', price: '₦8,500', note: 'Fits everything' },
-    { name: 'Leather Belt', price: '₦6,000', note: 'Made to last' },
-    { name: 'Sun Hat', price: '₦5,500', note: 'Wide brim' },
-  ]
+  // Dummy products with pictures that show what they are, matched to the
+  // kind of shop, so anyone can tell at a glance what the template is for
+  const set = previewSet(theme?.sampleSet || (TEMPLATES[theme?.template] ? theme.template : 'classic'))
+  const products = set.products.map(([name, price, note]) => ({ name, price, note, icon: pictureIcon(name) }))
+  const tint = resolved.brand || '#155dfc'
+  const pictureStyle = { background: `linear-gradient(135deg, ${tint}22, ${tint}55)` }
+  const iconSize = compact ? 'text-[14px]' : 'text-3xl'
   // Dense templates show four across in the preview, the rest three
   const shown = layout.columns >= 5 ? products : products.slice(0, 3)
   const gridCols = layout.columns >= 5 ? 'grid-cols-4' : 'grid-cols-3'
@@ -90,8 +93,8 @@ function ThemePreview({ theme, compact = false }) {
       {/* Menu bar */}
       <div className={`flex items-center justify-between border-b border-gray-200 ${pad}`}>
         <div className="font-poppins flex gap-2 text-gray-600">
-          <span>Women</span>
-          <span>Shoes</span>
+          <span>{set.menu[0]}</span>
+          <span>{set.menu[1]}</span>
         </div>
         <span className="font-poppins font-bold tracking-wide">YOUR STORE</span>
         <span className="font-poppins text-gray-600">Cart (0)</span>
@@ -99,7 +102,8 @@ function ThemePreview({ theme, compact = false }) {
 
       {/* Banner */}
       <div className={`bg-gray-700 text-center text-white ${bannerPad}`}>
-        <h2 className={`font-poppins font-bold ${headline}`}>New Season</h2>
+        <p className={compact ? 'text-[10px] leading-none' : 'text-2xl leading-none'}>{products.slice(0, 3).map((p) => p.icon).join(' ')}</p>
+        <h2 className={`font-poppins mt-1 font-bold ${headline}`}>{set.banner}</h2>
         <p className="mt-1 opacity-80">Shop the new collection</p>
         <span
           className={`mt-2 inline-block rounded-md bg-blue-600 text-white ${
@@ -121,8 +125,11 @@ function ThemePreview({ theme, compact = false }) {
               }`}
             >
               <div
-                className={`shrink-0 rounded-md bg-gray-200 ${compact ? 'h-5 w-5' : 'h-10 w-10'}`}
-              />
+                className={`flex shrink-0 items-center justify-center rounded-md ${compact ? 'h-5 w-5 text-[10px]' : 'h-10 w-10 text-xl'}`}
+                style={pictureStyle}
+              >
+                {product.icon}
+              </div>
               <div className="min-w-0 flex-1">
                 <h3 className="font-epilogue truncate font-semibold">{product.name}</h3>
                 <p className="truncate text-gray-500">{product.note}</p>
@@ -151,7 +158,9 @@ function ThemePreview({ theme, compact = false }) {
           <div className={`grid ${gridCols} ${layout.card === 'compact' ? 'gap-1' : 'gap-2'}`}>
             {shown.map((product) => (
               <div key={product.name} className={cardClass}>
-                <div className={imageClass} />
+                <div className={`${imageClass} flex items-center justify-center ${iconSize}`} style={pictureStyle}>
+                  {product.icon}
+                </div>
                 {layout.card === 'compact' ? (
                   <>
                     <p className="mt-1 font-bold">{product.price}</p>

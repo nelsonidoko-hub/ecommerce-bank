@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import ThemePreview from '../ThemePreview'
+import { useAllTemplates, previewTheme } from '../../platform/usePlatformData'
 import {
-  TEMPLATE_LIST,
   TEMPLATES,
+  recipeTemplate,
   FONT_LABELS,
   HEADING_FONTS,
   BODY_FONTS,
@@ -24,7 +25,8 @@ function ThemeEditor({ value, onChange, liveTemplate }) {
   useEffect(() => setHex(theme.brandColor), [theme.brandColor])
 
   const resolved = resolveTheme(theme)
-  const base = TEMPLATES[theme.template] || TEMPLATES.classic
+  const templates = useAllTemplates()
+  const base = TEMPLATES[theme.template] || recipeTemplate(theme.template, theme.recipe) || TEMPLATES.classic
   const readability = brandReadability(resolved.brand)
   const set = (field, v) => onChange({ ...theme, [field]: v })
 
@@ -39,18 +41,18 @@ function ThemeEditor({ value, onChange, liveTemplate }) {
       <div>
         <h3 className="mb-2 text-sm font-semibold text-gray-900">Template</h3>
         <div className="grid grid-cols-2 gap-3">
-          {TEMPLATE_LIST.map((t) => {
+          {templates.map((t) => {
             const selected = theme.template === t.id
             return (
               <button
                 key={t.id}
                 type="button"
                 // a new template starts from its own colours, fonts and corners
-                onClick={() => onChange({ ...EMPTY_THEME, template: t.id })}
+                onClick={() => onChange({ ...EMPTY_THEME, template: t.id, ...(t.studio ? { recipe: t, sampleSet: t.sampleSet } : {}) })}
                 aria-pressed={selected}
                 className={`rounded-lg border-2 p-2 text-left transition ${selected ? 'border-blue-600' : 'border-gray-200 hover:border-gray-400'}`}
               >
-                <ThemePreview theme={{ template: t.id }} compact />
+                <ThemePreview theme={previewTheme(t)} compact />
                 <span className="mt-1.5 flex items-center justify-between gap-1 text-xs font-semibold text-gray-900">
                   {t.label}
                   {liveTemplate === t.id && <span className="rounded-full bg-green-100 px-1.5 py-0.5 text-[10px] font-medium text-green-700">Live</span>}

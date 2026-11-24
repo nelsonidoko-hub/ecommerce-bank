@@ -26,7 +26,7 @@ function StoreGate({ children }) {
       <>
         <div className="sticky top-0 z-[60] flex flex-wrap items-center justify-center gap-x-3 gap-y-1 bg-gray-900 px-4 py-2 text-center text-sm text-white">
           <span>
-            You're viewing the <b>{template?.label || 'template'}</b> demo. Orders are switched off.
+            You're viewing the <b>{template?.label || String(status.demoTemplate || 'template').replace(/^./, (c) => c.toUpperCase())}</b> demo. Orders are switched off.
           </span>
           <a
             href={platformUrl(`/signup?template=${encodeURIComponent(status.demoTemplate || 'classic')}`)}

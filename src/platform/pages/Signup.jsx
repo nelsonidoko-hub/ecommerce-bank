@@ -1,15 +1,17 @@
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import ShopFields, { inputClass } from '../components/ShopFields'
-import { TEMPLATES } from '../../utils/themes'
 import { signup, saveAccount, adminLink, errorMessage } from '../../services/platformService'
 import { PLATFORM_NAME } from '../../utils/storeContext'
+
+const isTemplateId = (id) => typeof id === 'string' && /^[a-z][a-z0-9-]{1,29}$/.test(id)
 
 // Account + first shop in one form. On success the merchant lands straight in
 // their new shop's admin, already wearing the chosen template.
 function Signup() {
   const [params] = useSearchParams()
-  const initialTemplate = TEMPLATES[params.get('template')] ? params.get('template') : 'classic'
+  // Built-in or Template Studio; the server falls back to Classic if unknown
+  const initialTemplate = isTemplateId(params.get('template')) ? params.get('template') : 'classic'
 
   const [account, setAccount] = useState({ name: '', email: '', password: '' })
   const [shop, setShop] = useState({ shopName: '', slug: '', template: initialTemplate })

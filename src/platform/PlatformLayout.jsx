@@ -47,6 +47,7 @@ function PlatformLayout() {
               <>
                 <NavLink to="/dashboard" className={navClass}>My shops</NavLink>
                 {account.role === 'superadmin' && <NavLink to="/founder" className={navClass}>Founder</NavLink>}
+                {(account.role === 'superadmin' || account.designer) && <NavLink to="/studio" className={navClass}>Studio</NavLink>}
                 <button type="button" onClick={logout} className="text-sm text-slate-500 hover:text-slate-900">Log out</button>
               </>
             ) : (
@@ -73,6 +74,7 @@ function PlatformLayout() {
               <>
                 <Link to="/dashboard" onClick={() => setOpen(false)}>My shops</Link>
                 {account.role === 'superadmin' && <Link to="/founder" onClick={() => setOpen(false)}>Founder</Link>}
+                {(account.role === 'superadmin' || account.designer) && <Link to="/studio" onClick={() => setOpen(false)}>Template Studio</Link>}
                 <button type="button" onClick={logout} className="text-left text-slate-500">Log out</button>
               </>
             ) : (

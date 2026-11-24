@@ -1,11 +1,11 @@
 import TemplateCard from '../components/TemplateCard'
-import { TEMPLATE_LIST } from '../../utils/themes'
-import { useDemos } from '../usePlatformData'
+import { useDemos, useAllTemplates } from '../usePlatformData'
 import { getAccount } from '../../services/platformService'
 
 // Every template, with a live demo shop for each
 function Templates() {
   const demos = useDemos()
+  const templates = useAllTemplates()
   // Signed-in merchants add a shop; new visitors sign up
   const startPath = getAccount() ? '/new-shop' : '/signup'
 
@@ -17,7 +17,7 @@ function Templates() {
         one you like. You can change colours, fonts and corners, or switch templates, any time.
       </p>
       <div className="mt-10 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {TEMPLATE_LIST.map((t) => (
+        {templates.map((t) => (
           <TemplateCard key={t.id} template={t} demoUrl={demos[t.id]} startTo={`${startPath}?template=${t.id}`} />
         ))}
       </div>

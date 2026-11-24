@@ -11,6 +11,7 @@ import {
 import ThemePreview from '../../components/ThemePreview'
 import TemplateCard from '../components/TemplateCard'
 import { TEMPLATE_LIST } from '../../utils/themes'
+import { useAllTemplates } from '../usePlatformData'
 import { PLATFORM_NAME } from '../../utils/storeContext'
 import { usePlans, useDemos, naira } from '../usePlatformData'
 
@@ -47,6 +48,7 @@ function planFeatures(plan, trialDays) {
 function Landing() {
   const plans = usePlans()
   const demos = useDemos()
+  const templateCount = useAllTemplates().length
   const showcase = TEMPLATE_LIST.filter((t) => ['fresh', 'glow', 'tech', 'catalog'].includes(t.id))
 
   return (
@@ -104,10 +106,10 @@ function Landing() {
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <h2 className="font-poppins text-3xl font-bold text-slate-900">A design for every kind of shop</h2>
-              <p className="mt-2 text-slate-600">{TEMPLATE_LIST.length} templates, each fully yours to change.</p>
+              <p className="mt-2 text-slate-600">{templateCount} templates, each fully yours to change.</p>
             </div>
             <Link to="/templates" className="font-semibold text-emerald-700 hover:underline">
-              See all {TEMPLATE_LIST.length} templates →
+              See all {templateCount} templates →
             </Link>
           </div>
           <div className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">

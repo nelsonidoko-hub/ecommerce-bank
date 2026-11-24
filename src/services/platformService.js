@@ -30,6 +30,8 @@ export function errorMessage(error, fallback = 'Something went wrong. Please try
 
 export const getPlans = async () => (await axios.get(`${API}/plans`)).data
 export const getDemos = async () => (await axios.get(`${API}/demos`)).data
+// Templates made in the Template Studio and published to the gallery
+export const getStudioGallery = async () => (await axios.get(`${API}/templates`)).data
 export const checkSlug = async ({ slug, name }) =>
   (await axios.get(`${API}/slug-check`, { params: slug ? { slug } : { name } })).data
 

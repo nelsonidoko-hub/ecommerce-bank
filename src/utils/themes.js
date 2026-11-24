@@ -220,9 +220,47 @@ export function brandReadability(brand) {
 //   { template, brandColor, headingFont, bodyFont, radius }
 // The template supplies every value; the owner's choices override some of them.
 // Anything unknown or invalid is ignored, so bad data can never break the store.
+// A Template Studio template arrives from the server as a recipe (the same
+// fields as a built-in template). Anything missing or unknown falls back to
+// Classic, so a bad recipe can never break a storefront.
+export function recipeTemplate(id, recipe, meta = {}) {
+  if (!recipe || typeof recipe !== 'object') return null
+  const c = TEMPLATES.classic
+  const pick = (value, ok, fallback) => (ok(value) ? value : fallback)
+  const colour = (value) => (value === '' || isHex(value) ? value : '')
+  const l = recipe.layout && typeof recipe.layout === 'object' ? recipe.layout : {}
+  return {
+    id,
+    label: meta.label || id,
+    bestFor: meta.bestFor || '',
+    description: meta.description || '',
+    sampleSet: meta.sampleSet || 'classic',
+    studio: true,
+    brand: colour(recipe.brand),
+    ink: colour(recipe.ink),
+    surface: colour(recipe.surface),
+    headingFont: pick(recipe.headingFont, (v) => HEADING_FONTS.includes(v), c.headingFont),
+    bodyFont: pick(recipe.bodyFont, (v) => BODY_FONTS.includes(v), c.bodyFont),
+    radius: pick(recipe.radius, (v) => Boolean(RADIUS_LABELS[v]), c.radius),
+    uppercase: recipe.uppercase === true,
+    headingWeight: Number(recipe.headingWeight) || 0,
+    layout: {
+      card: pick(l.card, (v) => CARD_STYLES.includes(v), c.layout.card),
+      grid: pick(l.grid, (v) => v === 'grid' || v === 'list', c.layout.grid),
+      columns: pick(Number(l.columns), (v) => v >= 2 && v <= 5, c.layout.columns),
+      footer: pick(l.footer, (v) => v === 'dark' || v === 'light', c.layout.footer),
+      hero: pick(l.hero, (v) => ['full', 'compact', 'slim'].includes(v), c.layout.hero),
+      search: l.search === true,
+    },
+  }
+}
+
+// The parts a template is built from (the Template Studio offers these)
+export const CARD_STYLES = ['standard', 'borderless', 'bordered', 'menu', 'compact', 'centered', 'spec', 'tile']
+
 export function resolveTheme(saved) {
   const s = saved && typeof saved === 'object' ? saved : {}
-  const base = TEMPLATES[s.template] || TEMPLATES.classic
+  const base = TEMPLATES[s.template] || recipeTemplate(s.template, s.recipe) || TEMPLATES.classic
 
   return {
     template: base.id,

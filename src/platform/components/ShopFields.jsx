@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { checkSlug } from '../../services/platformService'
 import { PLATFORM_DOMAIN } from '../../utils/storeContext'
-import { TEMPLATE_LIST, TEMPLATES } from '../../utils/themes'
+import { useAllTemplates } from '../usePlatformData'
 import TemplateCard from './TemplateCard'
 
 export const inputClass =
@@ -25,6 +25,7 @@ export function slugify(text) {
 // value: { shopName, slug, template }, onChange(next)
 // Reports whether the address is usable through onReady(boolean).
 function ShopFields({ value, onChange, onReady, showTemplates = true }) {
+  const templates = useAllTemplates()
   const [slugEdited, setSlugEdited] = useState(Boolean(value.slug))
   const [check, setCheck] = useState({ state: 'idle' })
   const latest = useRef(0)
@@ -125,11 +126,11 @@ function ShopFields({ value, onChange, onReady, showTemplates = true }) {
       {showTemplates && (
         <div>
           <p className="mb-2 text-sm font-medium text-slate-800">
-            Template: <span className="text-emerald-700">{TEMPLATES[value.template]?.label}</span>
+            Template: <span className="text-emerald-700">{templates.find((t) => t.id === value.template)?.label || value.template}</span>
             <span className="font-normal text-slate-500"> (you can switch any time)</span>
           </p>
           <div className="grid max-h-[28rem] grid-cols-2 gap-3 overflow-y-auto rounded-xl border border-slate-200 p-2 sm:grid-cols-3">
-            {TEMPLATE_LIST.map((t) => (
+            {templates.map((t) => (
               <TemplateCard key={t.id} template={t} selected={value.template === t.id} onSelect={(id) => onChange({ ...value, template: id })} />
             ))}
           </div>

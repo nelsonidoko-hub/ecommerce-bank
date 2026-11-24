@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Navigate, useSearchParams } from 'react-router-dom'
 import ShopFields from '../components/ShopFields'
-import { TEMPLATES } from '../../utils/themes'
 import { getAccount, createShop, adminLink, errorMessage, getMyDesigns } from '../../services/platformService'
+
+const isTemplateId = (id) => typeof id === 'string' && /^[a-z][a-z0-9-]{1,29}$/.test(id)
 
 // Another shop for a merchant who already has an account
 function NewShop() {
@@ -10,7 +11,7 @@ function NewShop() {
   const [shop, setShop] = useState({
     shopName: '',
     slug: '',
-    template: TEMPLATES[params.get('template')] ? params.get('template') : 'classic',
+    template: isTemplateId(params.get('template')) ? params.get('template') : 'classic',
   })
   const [ready, setReady] = useState(false)
   const [busy, setBusy] = useState('')

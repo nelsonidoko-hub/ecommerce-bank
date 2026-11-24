@@ -13,3 +13,8 @@ export const getShop = async (id) => (await axios.get(`${API}/shops/${id}`, auth
 // action: suspend {reason} | unsuspend | extend-trial {days} | free-months {months} | plan {plan}
 export const shopAction = async (id, action, extra = {}) =>
   (await axios.post(`${API}/shops/${id}/action`, { action, ...extra }, auth())).data
+
+// The team (Template Studio designers)
+export const listTeam = async () => (await axios.get(`${API}/team`, auth())).data
+export const addDesigner = async (email) => (await axios.post(`${API}/team`, { email }, auth())).data
+export const removeDesigner = async (id) => (await axios.delete(`${API}/team/${id}`, auth())).data

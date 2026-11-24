@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import ThemePreview from '../../components/ThemePreview'
+import { previewTheme } from '../usePlatformData'
 
 // One template in the gallery: a live mini-preview, who it suits, and the two
 // actions: look at the full demo shop, or start a shop with it.
@@ -7,7 +8,7 @@ function TemplateCard({ template, demoUrl, startTo, selected = false, onSelect }
   const body = (
     <>
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-shadow group-hover:shadow-md">
-        <ThemePreview theme={{ template: template.id }} compact />
+        <ThemePreview theme={previewTheme(template)} compact />
       </div>
       <div className="mt-3">
         <div className="flex items-center justify-between gap-2">

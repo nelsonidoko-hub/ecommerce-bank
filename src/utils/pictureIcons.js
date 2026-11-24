@@ -1,0 +1,62 @@
+// A small drawing (emoji) for each kind of product, so a dummy picture shows
+// what the thing is. First match wins. Kept in step with the backend's
+// utils/sampleData.js (the pictures on sample products).
+export const PICTURE_ICONS = [
+  [/backpack|school bag/i, "🎒"],
+  [/sneaker|shoe|slides|sandal/i, "👟"],
+  [/sun hat|straw hat/i, "👒"],
+  [/cap\b|hat\b/i, "🧢"],
+  [/dress|gown/i, "👗"],
+  [/hoodie|jacket|coat/i, "🧥"],
+  [/trouser|pants|jeans|shorts/i, "👖"],
+  [/scarf/i, "🧣"],
+  [/tee\b|t-shirt|shirt|top\b/i, "👕"],
+  [/tote|clutch|bag|purse/i, "👜"],
+  [/belt|tie\b/i, "👔"],
+  [/romper|baby wear/i, "👶"],
+  [/feeding|bottle set|baby/i, "🍼"],
+  [/teddy|plush|toy/i, "🧸"],
+  [/blocks|lego/i, "🧱"],
+  [/crayon|art kit|paint/i, "🖍️"],
+  [/jollof|fried rice|ofada|rice/i, "🍛"],
+  [/small chops|platter|suya/i, "🍢"],
+  [/soup|stew/i, "🍲"],
+  [/cake|pastry|bread/i, "🍰"],
+  [/zobo|chapman|juice|drink|smoothie/i, "🍹"],
+  [/water bottle|flask/i, "🥤"],
+  [/frying pan|pan\b|pot\b/i, "🍳"],
+  [/kettle|tea/i, "☕"],
+  [/blender/i, "🥤"],
+  [/fan\b/i, "🌀"],
+  [/bulb|lamp|light/i, "💡"],
+  [/towel/i, "🛁"],
+  [/storage|container/i, "🥡"],
+  [/extension|socket|charger|cable/i, "🔌"],
+  [/clock/i, "🕰️"],
+  [/lip|lipstick|gloss/i, "💄"],
+  [/mist|perfume|fragrance/i, "🌸"],
+  [/lotion|cream|serum|butter|soap|oil|cleanser/i, "🧴"],
+  [/earbud|headphone|earphone/i, "🎧"],
+  [/speaker/i, "🔊"],
+  [/power bank|battery/i, "🔋"],
+  [/watch/i, "⌚"],
+  [/phone|case/i, "📱"],
+  [/laptop|computer/i, "💻"],
+  [/book/i, "📚"],
+  [/plant|flower/i, "🪴"],
+  [/new arrivals|collection|sale/i, "🛍️"],
+]
+export const pictureIcon = (label) => PICTURE_ICONS.find(([re]) => re.test(String(label)))?.[1] || '🛍️'
+
+// Dummy products for template previews, by the kind of shop (the sample set)
+export const PREVIEW_SETS = {
+  classic: { menu: ['Clothing', 'Accessories'], banner: 'New Season', products: [['Cotton Tee', '₦8,500', 'Soft and light'], ['Canvas Tote Bag', '₦9,000', 'Fits everything'], ['Leather Belt', '₦6,000', 'Made to last'], ['Denim Jacket', '₦24,000', 'Everyday classic']] },
+  minimal: { menu: ['Dresses', 'Accessories'], banner: 'The Edit', products: [['Linen Wrap Dress', '₦28,000', 'Soft linen'], ['Silk Scarf', '₦9,500', 'Hand finished'], ['Woven Clutch', '₦15,000', 'Evening ready'], ['Straw Sun Hat', '₦7,500', 'Wide brim']] },
+  bold: { menu: ['Hoodies', 'Sneakers'], banner: 'DROP 04', products: [['Graphic Hoodie', '₦22,000', 'Heavyweight'], ['High-Top Sneakers', '₦35,000', 'Street ready'], ['Snapback Cap', '₦8,000', 'One size'], ['Cargo Pants', '₦19,000', 'Six pockets']] },
+  fresh: { menu: ['Meals', 'Drinks'], banner: 'Hot & Fresh Today', products: [['Party Jollof Rice', '₦4,500', 'Smoky, with chicken'], ['Small Chops Platter', '₦6,000', 'Puff-puff, samosa'], ['Chilled Zobo', '₦1,000', 'Ginger and pineapple'], ['Fried Rice Special', '₦4,000', 'With plantain']] },
+  catalog: { menu: ['Kitchen', 'Home'], banner: 'Deals this week', products: [['Electric Kettle', '₦18,500', '1.7 litres'], ['Rechargeable Fan', '₦32,000', '12 hours'], ['Blender 1.5L', '₦27,000', '3 speeds'], ['Frying Pan', '₦12,000', 'Non-stick']] },
+  glow: { menu: ['Skincare', 'Body'], banner: 'Your glow, naturally', products: [['Vitamin C Serum', '₦12,500', 'Brightening'], ['Raw Shea Butter', '₦4,000', 'Pure, unrefined'], ['Tinted Lip Oil', '₦5,500', 'Soft shine'], ['Body Mist', '₦7,000', 'Fresh floral']] },
+  tech: { menu: ['Audio', 'Power'], banner: 'Latest gadgets', products: [['Wireless Earbuds', '₦25,000', '30h battery'], ['Power Bank 20000mAh', '₦18,000', 'Fast charge'], ['Smart Watch', '₦38,000', 'Heart rate'], ['Bluetooth Speaker', '₦21,000', 'Waterproof']] },
+  playful: { menu: ['Toys', 'Baby'], banner: 'Fun for little ones', products: [['Plush Teddy Bear', '₦9,000', 'Extra soft'], ['Building Blocks', '₦12,000', '120 pieces'], ['Baby Romper', '₦6,500', 'Pure cotton'], ['Crayon Art Kit', '₦5,000', '48 colours']] },
+}
+export const previewSet = (id) => PREVIEW_SETS[id] || PREVIEW_SETS.classic
