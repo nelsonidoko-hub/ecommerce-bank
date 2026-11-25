@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { API_BASE } from '../../config'
 import {
@@ -227,7 +228,7 @@ function AdminPayments() {
       <div className="mb-6">
         <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Payments</h2>
         <p className="text-sm text-gray-500 mt-1">
-          Connect your Paystack account so customers can pay online.
+          Connect your Paystack account so customers can pay online. (Bank transfer and pay on delivery are in Settings.)
         </p>
       </div>
 
@@ -253,7 +254,11 @@ function AdminPayments() {
         {status.activeSource === 'none' && (
           <Banner tone="red" icon={XCircleIcon}>
             <p className="font-semibold">Paystack isn't connected</p>
-            <p>Customers can't pay online yet. Add a key below.</p>
+            <p>
+              Customers can't pay online yet. Add a key below once your Paystack account is activated. Until then you
+              can still sell: turn on <b>bank transfer</b> or <b>pay on delivery</b> in{' '}
+              <Link to="/admin/settings" className="font-semibold underline">Settings → Other ways to pay</Link>.
+            </p>
           </Banner>
         )}
 

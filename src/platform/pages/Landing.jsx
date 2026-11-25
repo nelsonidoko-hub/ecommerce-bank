@@ -18,7 +18,7 @@ import { usePlans, useDemos, naira } from '../usePlatformData'
 const STEPS = [
   ['Pick a design', 'Choose from ready-made templates for fashion, food, beauty, gadgets, kids and more.'],
   ['Make it yours', 'Add your logo, products and prices. Change colours and fonts. Your shop comes with sample products so you can see how it looks.'],
-  ['Start selling', 'Connect your Paystack account and publish. Customers pay you directly.'],
+  ['Start selling', 'Connect Paystack, or start with bank transfer or pay on delivery, and publish. Customers pay you directly.'],
 ]
 
 const FEATURES = [
