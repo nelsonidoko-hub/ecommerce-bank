@@ -92,7 +92,10 @@ function NewOnes({ templates }) {
           </div>
           <div className="mt-2 flex items-center justify-between gap-2">
             <h3 className="font-poppins font-semibold text-slate-900">{t.label}</h3>
-            <StatusChip status={t.status} />
+            <span className="flex items-center gap-1">
+              {t.visibility === 'private' && <span className="rounded-full bg-violet-100 px-2 py-0.5 text-xs font-semibold text-violet-800">Private</span>}
+              <StatusChip status={t.status} />
+            </span>
           </div>
           <p className="text-xs text-slate-500">
             {t.bestFor || 'No description yet'} · {t.shops} shop{t.shops === 1 ? '' : 's'} using it{t.createdByName ? ` · by ${t.createdByName}` : ''}

@@ -83,7 +83,7 @@ function Colour({ label, value, onChange, optional }) {
   )
 }
 
-const blank = () => ({ key: '', label: '', bestFor: '', description: '', sampleSet: 'classic', recipe: recipeFromBuiltIn('classic'), pictures: {}, builtIn: '', samples: null })
+const blank = () => ({ key: '', label: '', bestFor: '', description: '', sampleSet: 'classic', recipe: recipeFromBuiltIn('classic'), pictures: {}, builtIn: '', samples: null, visibility: 'public', allowedEmails: '' })
 
 // Starting point when switching to "My own products": the chosen set's
 // categories and first products (and any photos already added for them)
@@ -220,7 +220,7 @@ function Editor() {
     getStudioTemplate(id)
       .then((data) => {
         setSaved(data)
-        setT({ key: data.key, label: data.label, bestFor: data.bestFor, description: data.description, sampleSet: data.sampleSet, recipe: data.recipe, pictures: data.pictures || {}, builtIn: data.builtIn || '', samples: data.samples ? withLabels(data.samples) : null })
+        setT({ key: data.key, label: data.label, bestFor: data.bestFor, description: data.description, sampleSet: data.sampleSet, recipe: data.recipe, pictures: data.pictures || {}, builtIn: data.builtIn || '', samples: data.samples ? withLabels(data.samples) : null, visibility: data.visibility || 'public', allowedEmails: (data.allowedEmails || []).join(', ') })
       })
       .catch((err) => setError(errorMessage(err, 'Could not load this template.')))
   }, [id, isNew])
@@ -302,6 +302,24 @@ function Editor() {
               <textarea id="description" rows={2} maxLength={240} className={input} placeholder="e.g. Black and gold, elegant serif headings, centred products." value={t.description} onChange={(e) => setT({ ...t, description: e.target.value })} />
             </div>
           </Section>
+
+          {!t.builtIn && (
+            <Section title="Who can use it" hint="Public templates go in the gallery for everyone. Private ones are made for particular clients: only their accounts can use them, and they never show in the gallery.">
+              <Choice
+                name="Who can use it"
+                value={t.visibility}
+                options={{ public: ['Everyone (gallery)', 'Any merchant can pick it'], private: ['Private (for clients)', 'Only the emails below'] }}
+                onChange={(v) => setT({ ...t, visibility: v })}
+              />
+              {t.visibility === 'private' && (
+                <div>
+                  <label htmlFor="allowed" className="mb-1 block text-xs font-medium text-slate-700">Client emails (their platform account emails, separated by commas)</label>
+                  <textarea id="allowed" rows={2} className={input} placeholder="amaka@gmail.com, amaka.shop@gmail.com" value={t.allowedEmails} onChange={(e) => setT({ ...t, allowedEmails: e.target.value })} />
+                  <p className="mt-1 text-xs text-slate-500">Tip: use Founder → Clients to make the client's shop with this template for them.</p>
+                </div>
+              )}
+            </Section>
+          )}
 
           <Section title="Sample products" hint="What a new shop starts with (menu, products and pictures), and what the preview shows. Merchants replace them with their own. Nothing fits? Choose “My own products” and type them in.">
             <select aria-label="Sample products" className={input} value={t.sampleSet} onChange={(e) => setT({ ...t, sampleSet: e.target.value, samples: e.target.value === 'custom' ? t.samples || samplesFrom(t.sampleSet, sampleNames, pics) : t.samples })}>

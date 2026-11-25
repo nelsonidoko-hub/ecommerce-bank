@@ -49,4 +49,6 @@ export const getMyDesigns = async () => (await axios.get(`${API}/designs`, auth(
 
 // Forgotten password for a merchant account (the platform site, not a shop)
 export const forgotPassword = async (email) => (await axios.post(`${API}/forgot-password`, { email })).data
-export const resetPassword = async (token, password) => (await axios.post(`${API}/reset-password`, { token, password })).data
+// acceptTerms: for a shop the founder made for you (invite link), the first time
+export const resetPassword = async (token, password, acceptTerms) =>
+  (await axios.post(`${API}/reset-password`, { token, password, ...(acceptTerms ? { acceptTerms: true } : {}) })).data

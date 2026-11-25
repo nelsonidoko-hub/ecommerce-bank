@@ -35,6 +35,7 @@ export const ACTION_LABELS = {
   'market-hide': 'Hid from Market Square',
   'market-unhide': 'Showed in Market Square again',
   'close-reports': 'Closed market reports',
+  'create-for-client': 'Made a shop for a client',
 }
 
 export const REPORT_REASONS = {

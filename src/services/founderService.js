@@ -18,3 +18,6 @@ export const shopAction = async (id, action, extra = {}) =>
 export const listTeam = async () => (await axios.get(`${API}/team`, auth())).data
 export const addDesigner = async (email) => (await axios.post(`${API}/team`, { email }, auth())).data
 export const removeDesigner = async (id) => (await axios.delete(`${API}/team/${id}`, auth())).data
+
+// A shop made for a client (done-for-you): { name, email, shopName, slug?, template }
+export const createClientShop = async (values) => (await axios.post(`${API}/clients`, values, auth())).data

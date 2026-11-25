@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
-import { getOverview, listShops, listTeam, addDesigner, removeDesigner } from '../../../services/founderService'
+import { getOverview, listShops, listTeam, addDesigner, removeDesigner, createClientShop } from '../../../services/founderService'
+import { listStudio } from '../../../services/studioService'
+import { TEMPLATE_LIST } from '../../../utils/themes'
 import { errorMessage, saveAccount } from '../../../services/platformService'
 import { FounderOnly, StateChip, STATES, ACTION_LABELS, REPORT_REASONS, naira, day } from './shared'
 
@@ -223,6 +225,74 @@ function Shops() {
   )
 }
 
+// Shops made for clients (done-for-you): the shop goes in the client's own
+// account, and new clients get an email to set their password
+function Clients() {
+  const blankForm = { name: '', email: '', shopName: '', template: 'classic' }
+  const [form, setForm] = useState(blankForm)
+  const [studio, setStudio] = useState([])
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const [done, setDone] = useState(null)
+  useEffect(() => {
+    listStudio()
+      .then((d) => setStudio(d.templates.filter((t) => t.status === 'published' && !t.builtIn)))
+      .catch(() => {})
+  }, [])
+
+  async function submit(e) {
+    e.preventDefault()
+    setBusy(true)
+    setError('')
+    try {
+      setDone({ ...(await createClientShop(form)), email: form.email, shopName: form.shopName })
+      setForm(blankForm)
+    } catch (err) {
+      setError(errorMessage(err))
+    } finally {
+      setBusy(false)
+    }
+  }
+  const field = 'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm'
+  return (
+    <div className="max-w-2xl space-y-4">
+      <p className="text-sm text-slate-600">
+        Make a shop for a client. It goes in <b>their own account</b>: a new client gets an email to set their password
+        (and accept the terms); an existing one sees it under My shops. Make a private template for them first in the{' '}
+        <Link to="/studio" className="font-semibold text-emerald-700">Template Studio</Link> if you like.
+      </p>
+      {done && (
+        <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
+          <b>{done.shopName}</b> is ready at {done.url.replace(/^https?:\/\//, '')}.{' '}
+          {done.invited ? `An invite was emailed to ${done.email}.` : `Added to ${done.email}'s existing account.`}{' '}
+          <Link to={`/founder/shops/${done.shopId}`} className="font-semibold underline">Open its page</Link> (e.g. to give free months).
+        </div>
+      )}
+      {error && <p className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}
+      <form onSubmit={submit} className="space-y-3 rounded-xl border border-slate-200 bg-white p-4">
+        <div className="grid gap-3 sm:grid-cols-2">
+          <input required aria-label="Client's name" placeholder="Client's name" className={field} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+          <input required type="email" aria-label="Client's email" placeholder="Client's email" className={field} value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+        </div>
+        <input required aria-label="Shop name" placeholder="Shop name" className={field} value={form.shopName} onChange={(e) => setForm({ ...form, shopName: e.target.value })} />
+        <select aria-label="Template" className={field} value={form.template} onChange={(e) => setForm({ ...form, template: e.target.value })}>
+          <optgroup label="Built-in">
+            {TEMPLATE_LIST.map((t) => <option key={t.id} value={t.id}>{t.label}</option>)}
+          </optgroup>
+          {studio.length > 0 && (
+            <optgroup label="Template Studio">
+              {studio.map((t) => <option key={t.key} value={t.key}>{t.label}{t.visibility === 'private' ? ' (private)' : ''}</option>)}
+            </optgroup>
+          )}
+        </select>
+        <button type="submit" disabled={busy} className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">
+          {busy ? 'Creating…' : 'Create shop for client'}
+        </button>
+      </form>
+    </div>
+  )
+}
+
 // The platform team: who can use the Template Studio
 function Team() {
   const [team, setTeam] = useState(null)
@@ -284,7 +354,7 @@ function Team() {
 // The founder's view of the whole platform
 function FounderHome() {
   const [params, setParams] = useSearchParams()
-  const tab = ['shops', 'team'].includes(params.get('tab')) ? params.get('tab') : 'overview'
+  const tab = ['shops', 'clients', 'team'].includes(params.get('tab')) ? params.get('tab') : 'overview'
   const tabClass = (t) =>
     `border-b-2 px-1 pb-2 text-sm font-semibold ${tab === t ? 'border-emerald-600 text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-800'}`
 
@@ -297,9 +367,10 @@ function FounderHome() {
           <div className="mt-6 flex gap-6 border-b border-slate-200">
             <button type="button" className={tabClass('overview')} onClick={() => setParams({})}>Overview</button>
             <button type="button" className={tabClass('shops')} onClick={() => setParams({ tab: 'shops' })}>Shops</button>
+            <button type="button" className={tabClass('clients')} onClick={() => setParams({ tab: 'clients' })}>Clients</button>
             <button type="button" className={tabClass('team')} onClick={() => setParams({ tab: 'team' })}>Team</button>
           </div>
-          <div className="mt-6">{tab === 'shops' ? <Shops /> : tab === 'team' ? <Team /> : <Overview />}</div>
+          <div className="mt-6">{tab === 'shops' ? <Shops /> : tab === 'clients' ? <Clients /> : tab === 'team' ? <Team /> : <Overview />}</div>
         </div>
       </section>
     </FounderOnly>

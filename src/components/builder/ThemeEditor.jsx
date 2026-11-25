@@ -25,7 +25,10 @@ function ThemeEditor({ value, onChange, liveTemplate }) {
   useEffect(() => setHex(theme.brandColor), [theme.brandColor])
 
   const resolved = resolveTheme(theme)
-  const templates = useAllTemplates()
+  const gallery = useAllTemplates()
+  // A template made just for this shop (private) isn't in the gallery: show it first
+  const own = !gallery.some((t) => t.id === theme.template) && theme.recipe ? recipeTemplate(theme.template, theme.recipe, { label: 'Your own template', sampleSet: theme.sampleSet, pictures: theme.pictures, samples: theme.samples }) : null
+  const templates = own ? [own, ...gallery] : gallery
   const base = TEMPLATES[theme.template] || recipeTemplate(theme.template, theme.recipe) || TEMPLATES.classic
   const readability = brandReadability(resolved.brand)
   const set = (field, v) => onChange({ ...theme, [field]: v })
