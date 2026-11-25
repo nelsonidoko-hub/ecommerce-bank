@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../../context/AuthContext'
-import { getAllOrders, updateOrderStatus } from '../../services/orderService'
+import { getAllOrders, updateOrderStatus, markOrderPaid } from '../../services/orderService'
 
 const STATUS_OPTIONS = ['pending', 'paid', 'shipped', 'delivered', 'cancelled']
 
@@ -36,6 +36,17 @@ function AdminOrders() {
       setOrders([])
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function handleMarkPaid(order) {
+    const how = order.paymentMethod === 'transfer' ? 'the bank transfer' : 'the payment'
+    if (!window.confirm(`Confirm you've received ${how} of ₦${order.totalPrice.toLocaleString()} for this order? The customer will be emailed.`)) return
+    try {
+      const updated = await markOrderPaid(order._id, user.token)
+      setOrders((prev) => prev.map((o) => (o._id === order._id ? { ...o, ...updated } : o)))
+    } catch (err) {
+      alert(err.response?.data?.message || 'Could not mark it paid')
     }
   }
 
@@ -248,6 +259,16 @@ function AdminOrders() {
                         >
                           {order.isPaid ? 'Paid' : 'Unpaid'}
                         </span>
+                        {order.paymentMethod && order.paymentMethod !== 'paystack' && (
+                          <span className="mt-1 block text-[11px] text-gray-500">
+                            {order.paymentMethod === 'transfer' ? 'Bank transfer' : 'On delivery'}
+                          </span>
+                        )}
+                        {!order.isPaid && ['transfer', 'delivery'].includes(order.paymentMethod) && (
+                          <button type="button" onClick={() => handleMarkPaid(order)} className="mt-1 block rounded-md bg-green-600 px-2 py-1 text-[11px] font-semibold text-white hover:bg-green-700">
+                            Mark as paid
+                          </button>
+                        )}
                       </td>
                       <td className="p-3 whitespace-nowrap">
                         <select

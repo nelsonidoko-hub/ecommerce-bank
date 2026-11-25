@@ -8,6 +8,7 @@ import {
   GlobeAltIcon,
   TruckIcon,
   MegaphoneIcon,
+  BanknotesIcon,
   CheckCircleIcon,
   ClockIcon,
 } from '@heroicons/react/24/outline'
@@ -380,6 +381,60 @@ function AdminSettings() {
                   />
                 </Field>
               </div>
+            )}
+          </div>
+        </Card>
+
+        <Card
+          icon={BanknotesIcon}
+          title="Other ways to pay"
+          description="Besides Paystack. Good while your Paystack account is waiting for activation, or for customers who prefer it. You confirm these payments yourself in Orders (Mark as paid)."
+        >
+          <label className="flex items-center gap-2 text-sm text-gray-800 cursor-pointer">
+            <input
+              type="checkbox"
+              className="h-4 w-4"
+              checked={Boolean(form.bankTransfer?.enabled)}
+              onChange={(e) => setNested('bankTransfer', 'enabled', e.target.checked)}
+            />
+            Bank transfer
+          </label>
+          {form.bankTransfer?.enabled && (
+            <div className="flex flex-col gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Field label="Bank name">
+                  <input className={inputClass} placeholder="e.g. GTBank" value={form.bankTransfer?.bankName || ''} onChange={(e) => setNested('bankTransfer', 'bankName', e.target.value)} />
+                </Field>
+                <Field label="Account number" hint="10 digits">
+                  <input className={inputClass} inputMode="numeric" maxLength={10} value={form.bankTransfer?.accountNumber || ''} onChange={(e) => setNested('bankTransfer', 'accountNumber', e.target.value.replace(/\D/g, ''))} />
+                </Field>
+              </div>
+              <Field label="Account name">
+                <input className={inputClass} value={form.bankTransfer?.accountName || ''} onChange={(e) => setNested('bankTransfer', 'accountName', e.target.value)} />
+              </Field>
+              <Field label="Note for customers (optional)" hint="e.g. Send your receipt on WhatsApp to 0803...">
+                <input className={inputClass} value={form.bankTransfer?.note || ''} onChange={(e) => setNested('bankTransfer', 'note', e.target.value)} />
+              </Field>
+              <Field label="Hold items for (hours)" hint="Unpaid transfer orders are cancelled after this and the items go back on sale. 1 to 72.">
+                <input type="number" min={1} max={72} className={inputClass} value={form.bankTransfer?.holdHours ?? 24} onChange={(e) => setNested('bankTransfer', 'holdHours', e.target.value)} />
+              </Field>
+            </div>
+          )}
+
+          <div className="border-t pt-4 mt-1">
+            <label className="flex items-center gap-2 text-sm text-gray-800 cursor-pointer mb-3">
+              <input
+                type="checkbox"
+                className="h-4 w-4"
+                checked={Boolean(form.payOnDelivery?.enabled)}
+                onChange={(e) => setNested('payOnDelivery', 'enabled', e.target.checked)}
+              />
+              Pay on delivery (or when collecting)
+            </label>
+            {form.payOnDelivery?.enabled && (
+              <Field label="Note for customers" hint="e.g. Cash or transfer to the rider. Lagos only.">
+                <input className={inputClass} value={form.payOnDelivery?.note || ''} onChange={(e) => setNested('payOnDelivery', 'note', e.target.value)} />
+              </Field>
             )}
           </div>
         </Card>

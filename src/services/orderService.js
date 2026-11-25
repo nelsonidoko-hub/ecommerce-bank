@@ -43,3 +43,8 @@ export const getOrdersByUserId = async (userId, token) => {
     (order) => order.user === userId || order.user?._id === userId
   )
 }
+// Bank transfer / pay-on-delivery orders: the shop confirms the money arrived
+export const markOrderPaid = async (orderId, token) => {
+  const response = await axios.put(`${API_URL}/${orderId}/mark-paid`, {}, authHeader(token))
+  return response.data
+}

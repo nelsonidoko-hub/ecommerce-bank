@@ -10,7 +10,7 @@ import { initializePayment } from '../services/paymentService'
 import { QuestionMarkCircleIcon, ShoppingBagIcon, BuildingStorefrontIcon, TruckIcon, TagIcon } from '@heroicons/react/24/outline'
 
 function Checkout() {
-  const { cartItems } = useCart()
+  const { cartItems, clearCart } = useCart()
   const { user } = useAuth()
   const { settings } = useSettings()
   const navigate = useNavigate()
@@ -66,6 +66,19 @@ function Checkout() {
 
   const pickupAvailable = settings.pickup.enabled
   const isPickup = deliveryMethod === 'pickup'
+
+  // Ways to pay this shop offers. Paystack shows unless the shop has other
+  // options and no Paystack keys yet (e.g. still waiting for activation).
+  const offersTransfer = Boolean(settings.bankTransfer?.enabled)
+  const offersDelivery = Boolean(settings.payOnDelivery?.enabled)
+  const offersPaystack = settings.paystackReady !== false || !(offersTransfer || offersDelivery)
+  const payOptions = [
+    offersPaystack && { id: 'paystack', label: 'Pay online now', help: 'Card, bank transfer or USSD through Paystack' },
+    offersTransfer && { id: 'transfer', label: 'Bank transfer', help: `Transfer to ${settings.bankTransfer.bankName}; we confirm it by hand` },
+    offersDelivery && { id: 'delivery', label: isPickup ? 'Pay when you collect' : 'Pay on delivery', help: settings.payOnDelivery?.note || 'Pay when your order arrives' },
+  ].filter(Boolean)
+  const [chosenPay, setChosenPay] = useState('')
+  const paymentMethod = payOptions.some((o) => o.id === chosenPay) ? chosenPay : payOptions[0].id
   const freeThreshold = settings.shipping.freeShippingThreshold
   const qualifiesForFree = freeThreshold > 0 && subtotal >= freeThreshold
   const shippingCost = isPickup || qualifiesForFree ? 0 : settings.shipping.flatRate
@@ -171,7 +184,13 @@ function Checkout() {
             : billingAddress,
       }
 
-      const order = await createOrder(orderData, user.token)
+      const order = await createOrder({ ...orderData, paymentMethod }, user.token)
+      if (paymentMethod !== 'paystack') {
+        // Placed: the order page shows how to pay (bank details) or that it's paid on delivery
+        clearCart()
+        navigate(`/orders/${order._id}`)
+        return
+      }
       const payment = await initializePayment(order._id, user.token)
 
       window.location.href = payment.data.authorization_url
@@ -563,6 +582,24 @@ function Checkout() {
               </div>
             </div>
 
+            {/* How to pay (whenever it's not just Paystack) */}
+            {(payOptions.length > 1 || paymentMethod !== 'paystack') && (
+              <div>
+                <h2 className="mb-3 text-lg font-bold text-gray-900">Payment</h2>
+                <div className="divide-y divide-gray-200 rounded-lg border border-gray-300" role="radiogroup" aria-label="Payment">
+                  {payOptions.map((o) => (
+                    <label key={o.id} className={`flex cursor-pointer items-start gap-3 p-4 ${paymentMethod === o.id ? 'bg-blue-50' : ''}`}>
+                      <input type="radio" name="paymentMethod" value={o.id} checked={paymentMethod === o.id} onChange={() => setChosenPay(o.id)} className="mt-1 accent-blue-600" />
+                      <span>
+                        <span className="block text-sm font-semibold text-gray-900">{o.label}</span>
+                        <span className="block text-xs text-gray-500">{o.help}</span>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Order note */}
             <div>
               <label htmlFor="customerNote" className="block text-lg font-bold text-gray-900 mb-3">
@@ -594,7 +631,9 @@ function Checkout() {
               className="w-full bg-blue-600 text-white font-semibold py-4 rounded-xl hover:bg-blue-700 transition duration-200 text-base shadow-sm disabled:opacity-50"
             >
               {loading
-                ? 'Redirecting to Paystack...'
+                ? paymentMethod === 'paystack' ? 'Redirecting to Paystack...' : 'Placing your order...'
+                : paymentMethod !== 'paystack' && !closedBlocked
+                  ? closedPreOrder ? 'Place pre-order' : 'Place order'
                 : closedBlocked
                   ? 'Closed right now'
                   : closedPreOrder

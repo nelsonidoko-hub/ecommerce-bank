@@ -108,7 +108,44 @@ function OrderDetail() {
 
       {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
 
-      {order.status === 'pending' && !order.isPaid && (
+      {/* Bank transfer: how to pay, until the shop confirms it */}
+      {order.paymentMethod === 'transfer' && order.status === 'pending' && !order.isPaid && (
+        <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm">
+          <p className="font-semibold text-gray-900">Pay by bank transfer</p>
+          <p className="mt-1 text-gray-700">
+            Transfer <b>₦{Number(order.totalPrice).toLocaleString('en-NG')}</b> to the account below
+            {order.expiresAt && ` before ${new Date(order.expiresAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}`}. We'll confirm it and email you.
+          </p>
+          <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
+            <dt className="text-gray-500">Bank</dt>
+            <dd className="font-semibold">{settings.bankTransfer?.bankName}</dd>
+            <dt className="text-gray-500">Account number</dt>
+            <dd className="font-semibold tracking-wider">{settings.bankTransfer?.accountNumber}</dd>
+            <dt className="text-gray-500">Account name</dt>
+            <dd className="font-semibold">{settings.bankTransfer?.accountName}</dd>
+            <dt className="text-gray-500">Narration</dt>
+            <dd className="font-semibold">{order.orderNumber || order._id.slice(-8).toUpperCase()}</dd>
+          </dl>
+          {settings.bankTransfer?.note && <p className="mt-3 text-gray-700">{settings.bankTransfer.note}</p>}
+          <button onClick={handleCancel} disabled={paying} className="mt-3 rounded-md border bg-white px-4 py-2 text-sm disabled:opacity-50">
+            Cancel order
+          </button>
+        </div>
+      )}
+      {order.paymentMethod === 'delivery' && !order.isPaid && order.status !== 'cancelled' && (
+        <div className="mb-6 rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-gray-800">
+          <p className="font-semibold text-gray-900">{order.deliveryMethod === 'pickup' ? 'Pay when you collect' : 'Pay on delivery'}</p>
+          <p className="mt-1">You'll pay <b>₦{Number(order.totalPrice).toLocaleString('en-NG')}</b> when your order {order.deliveryMethod === 'pickup' ? 'is collected' : 'arrives'}.</p>
+          {settings.payOnDelivery?.note && <p className="mt-1">{settings.payOnDelivery.note}</p>}
+          {order.status === 'pending' && (
+            <button onClick={handleCancel} disabled={paying} className="mt-3 rounded-md border bg-white px-4 py-2 text-sm disabled:opacity-50">
+              Cancel order
+            </button>
+          )}
+        </div>
+      )}
+
+      {order.status === 'pending' && !order.isPaid && (!order.paymentMethod || order.paymentMethod === 'paystack') && (
         <div className="border border-yellow-200 bg-yellow-50 rounded-lg p-4 mb-6">
           <p className="text-sm mb-3">
             This order is waiting for payment.
