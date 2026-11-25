@@ -266,6 +266,15 @@ function Clients() {
           <b>{done.shopName}</b> is ready at {done.url.replace(/^https?:\/\//, '')}.{' '}
           {done.invited ? `An invite was emailed to ${done.email}.` : `Added to ${done.email}'s existing account.`}{' '}
           <Link to={`/founder/shops/${done.shopId}`} className="font-semibold underline">Open its page</Link> (e.g. to give free months).
+          {done.inviteUrl && (
+            <div className="mt-3 border-t border-emerald-200 pt-3">
+              <p className="text-xs">Email not arriving? Send the client this link on WhatsApp (it works once, for 7 days, and only lets them set their password):</p>
+              <div className="mt-1 flex gap-2">
+                <input readOnly aria-label="Invite link" value={done.inviteUrl} onFocus={(e) => e.target.select()} className="min-w-0 flex-1 rounded border border-emerald-300 bg-white px-2 py-1 text-xs text-gray-800" />
+                <button type="button" onClick={() => navigator.clipboard?.writeText(done.inviteUrl).catch(() => {})} className="shrink-0 rounded bg-emerald-700 px-3 py-1 text-xs font-semibold text-white">Copy</button>
+              </div>
+            </div>
+          )}
         </div>
       )}
       {error && <p className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>}

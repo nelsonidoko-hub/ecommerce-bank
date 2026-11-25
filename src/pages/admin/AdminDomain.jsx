@@ -82,7 +82,9 @@ function AdminDomain() {
       <div>
         <h1 className="text-xl font-bold text-gray-900 sm:text-2xl">Your own domain</h1>
         <p className="mt-1 text-sm text-gray-500">
-          Connect a domain you've bought (from Whogohost, Namecheap, GoDaddy…). Your current shop address keeps working too.
+          Optional. Only for a web address you've bought yourself (e.g. from Whogohost, Namecheap, GoDaddy). Your shop already
+          works at its own free address, so you can skip this page. Not sure how? Your domain company's support, or the
+          platform team, can add the records for you.
         </p>
       </div>
 
@@ -157,30 +159,25 @@ function AdminDomain() {
             <p className="text-sm text-gray-700">
               {d.verified ? 'Keep these records at your domain company:' : 'At your domain company, open DNS settings and add these 3 records, then press Verify.'}
             </p>
-            <div className="mt-3 overflow-x-auto">
-              <table className="w-full min-w-[560px] text-left text-sm">
-                <thead className="text-xs uppercase tracking-wide text-gray-500">
-                  <tr>
-                    <th className="py-2 pr-3 font-medium">Type</th>
-                    <th className="py-2 pr-3 font-medium">Name / Host</th>
-                    <th className="py-2 pr-3 font-medium">Value</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {d.records.map((r) => (
-                    <tr key={r.type + r.name}>
-                      <td className="py-2.5 pr-3 font-mono text-xs font-semibold">{r.type}</td>
-                      <td className="py-2.5 pr-3">
-                        <div className="flex items-center gap-2"><code className="break-all text-xs">{r.name}</code><CopyButton text={r.name} /></div>
-                        <p className="mt-0.5 text-xs text-gray-400">{r.purpose}</p>
-                      </td>
-                      <td className="py-2.5 pr-3">
-                        <div className="flex items-center gap-2"><code className="break-all text-xs">{r.value}</code><CopyButton text={r.value} /></div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="mt-3 space-y-3">
+              {d.records.map((r) => (
+                <div key={r.type + r.name} className="rounded-lg border border-gray-200 p-3">
+                  <div className="flex items-center gap-2">
+                    <span className="rounded bg-gray-900 px-2 py-0.5 font-mono text-xs font-semibold text-white">{r.type}</span>
+                    <span className="text-xs text-gray-500">{r.purpose}</span>
+                  </div>
+                  <p className="mt-2 text-xs font-medium text-gray-500">Name / Host</p>
+                  <div className="mt-0.5 flex items-start gap-2">
+                    <code className="min-w-0 flex-1 break-all rounded bg-gray-50 px-2 py-1 text-sm">{r.name}</code>
+                    <CopyButton text={r.name} />
+                  </div>
+                  <p className="mt-2 text-xs font-medium text-gray-500">Value / Points to</p>
+                  <div className="mt-0.5 flex items-start gap-2">
+                    <code className="min-w-0 flex-1 break-all rounded bg-gray-50 px-2 py-1 text-sm">{r.value}</code>
+                    <CopyButton text={r.value} />
+                  </div>
+                </div>
+              ))}
             </div>
             <p className="mt-3 text-xs text-gray-500">
               Some domain companies want only the first part in the Name box (for example <code>_shopverify</code> or <code>www</code>) and add your domain themselves.

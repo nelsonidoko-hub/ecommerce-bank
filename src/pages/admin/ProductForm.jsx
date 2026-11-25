@@ -140,9 +140,22 @@ function ProductForm() {
     }))
   }
 
+  // On sale: "price" is what customers pay now; "oldPrice" is the price before
+  const salePrice = Number(form.price)
+  const beforePrice = Number(form.oldPrice)
+  const saleProblem =
+    form.onSale && form.oldPrice !== '' && salePrice > 0 && beforePrice <= salePrice
+      ? `The price before the sale must be higher than the sale price (₦${salePrice.toLocaleString()}).`
+      : ''
+  const percentOff = form.onSale && salePrice > 0 && beforePrice > salePrice ? Math.round((1 - salePrice / beforePrice) * 100) : 0
+
   async function handleSubmit(e) {
     e.preventDefault()
     setError('')
+    if (form.onSale && (form.oldPrice === '' || saleProblem)) {
+      setError(saleProblem || 'Enter the price before the sale, or untick On Sale.')
+      return
+    }
 
     const payload = {
       ...form,
@@ -197,7 +210,7 @@ function ProductForm() {
 
             <div>
               <label className="text-xs text-gray-500 flex items-center gap-1 mb-1">
-                <CurrencyDollarIcon className="h-4 w-4" /> Price (₦)
+                <CurrencyDollarIcon className="h-4 w-4" /> {form.onSale ? 'Sale price (₦): what customers pay now' : 'Price (₦)'}
               </label>
               <input
                 name="price"
@@ -456,15 +469,27 @@ function ProductForm() {
 
           {form.onSale && (
             <div className="pl-6">
-              <label className="text-xs text-gray-500 block mb-1">Original price (before discount)</label>
+              <label className="text-xs text-gray-500 block mb-1">Price before the sale (₦): shown crossed out</label>
               <input
                 name="oldPrice"
                 type="number"
-                placeholder="e.g. 20000"
+                min={0}
+                required
+                placeholder={salePrice > 0 ? `More than ${salePrice.toLocaleString()}, e.g. ${Math.round(salePrice * 1.25).toLocaleString()}` : 'e.g. 20000'}
                 value={form.oldPrice}
                 onChange={handleChange}
-                className="border rounded-md p-2 w-full"
+                aria-invalid={Boolean(saleProblem)}
+                className={`border rounded-md p-2 w-full ${saleProblem ? 'border-red-400' : ''}`}
               />
+              {saleProblem ? (
+                <p className="mt-1 text-xs text-red-600">{saleProblem}</p>
+              ) : percentOff > 0 ? (
+                <p className="mt-1 text-xs text-green-700">
+                  Customers see <span className="line-through">₦{beforePrice.toLocaleString()}</span> <b>₦{salePrice.toLocaleString()}</b> ({percentOff}% off)
+                </p>
+              ) : (
+                <p className="mt-1 text-xs text-gray-500">The sale price is the Price field above.</p>
+              )}
             </div>
           )}
 
