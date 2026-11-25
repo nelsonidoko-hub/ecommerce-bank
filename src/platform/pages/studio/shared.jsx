@@ -1,6 +1,7 @@
 import { Navigate } from 'react-router-dom'
 import { getAccount } from '../../../services/platformService'
 import { TEMPLATES, CLASSIC_BRAND_DISPLAY } from '../../../utils/themes'
+import { PARTS } from '../../../storefront/parts'
 
 // The founder and team members marked as designers
 export const canUseStudio = (account) => account?.role === 'superadmin' || account?.designer === true
@@ -35,11 +36,10 @@ export const PART_LABELS = {
     spec: ['Spec sheet', 'Product on white, full-width button (gadgets)'],
     tile: ['Tile', 'Chunky tinted tiles with a round + (kids, fun)'],
   },
-  hero: {
-    full: ['Full screen', 'A big picture that fills the screen'],
-    compact: ['Medium', 'A shorter banner'],
-    slim: ['Slim strip', 'Just a strip, so products show first'],
-  },
+  // Page structure: from the parts registry, so template packs' parts appear too
+  hero: Object.fromEntries(Object.entries(PARTS.hero).map(([id, p]) => [id, [p.label, p.help]])),
+  nav: Object.fromEntries(Object.entries(PARTS.nav).map(([id, p]) => [id, [p.label, p.help]])),
+  home: Object.fromEntries(Object.entries(PARTS.home).map(([id, p]) => [id, [p.label, p.help]])),
   grid: { grid: ['Grid', 'Products side by side'], list: ['List', 'One product per row'] },
   footer: { dark: ['Dark', 'Dark footer'], light: ['Light', 'Light footer'] },
   radius: { square: 'Square', soft: 'Slightly rounded', round: 'Very rounded' },

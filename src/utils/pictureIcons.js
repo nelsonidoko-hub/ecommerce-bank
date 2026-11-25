@@ -293,3 +293,7 @@ function customSet(samples) {
   return { menu: (samples.categories || []).slice(0, 2).map((c) => c.label), banner: samples.heading || 'Welcome', products }
 }
 export const previewSet = (id, samples) => (id === 'custom' && samples?.products?.length ? customSet(samples) : PREVIEW_SETS[id] || PREVIEW_SETS.classic)
+
+// Gadget and Atelier start with the same products as Tech and Minimal
+PREVIEW_SETS.gadget = { ...PREVIEW_SETS.tech, banner: 'Top deals today' }
+PREVIEW_SETS.atelier = { ...PREVIEW_SETS.minimal, banner: 'The new collection' }

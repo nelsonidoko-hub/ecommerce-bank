@@ -365,6 +365,15 @@ function Editor() {
             </label>
           </Section>
 
+          <Section title="Page structure" hint="What makes templates really different: where the menu, banner and products go.">
+            <p className="text-xs font-medium text-slate-700">Menu bar</p>
+            <Choice name="Menu bar" value={r.layout.nav || 'standard'} options={PART_LABELS.nav} onChange={(v) => setLayout({ nav: v })} columns="sm:grid-cols-3" />
+            <p className="text-xs font-medium text-slate-700">Banner</p>
+            <Choice name="Banner" value={r.layout.hero} options={PART_LABELS.hero} onChange={(v) => setLayout({ hero: v })} columns="sm:grid-cols-3" />
+            <p className="text-xs font-medium text-slate-700">Homepage</p>
+            <Choice name="Homepage" value={r.layout.home || 'sections'} options={PART_LABELS.home} onChange={(v) => setLayout({ home: v })} />
+          </Section>
+
           <Section title="Product cards" hint="How each product looks in the shop.">
             <Choice name="Product card style" value={r.layout.card} options={PART_LABELS.card} onChange={(v) => setLayout(v === 'menu' ? { card: v, grid: 'list' } : { card: v, grid: r.layout.grid === 'list' ? 'grid' : r.layout.grid })} />
           </Section>
@@ -385,8 +394,7 @@ function Editor() {
             </label>
           </Section>
 
-          <Section title="Banner and footer">
-            <Choice name="Banner" value={r.layout.hero} options={PART_LABELS.hero} onChange={(v) => setLayout({ hero: v })} columns="sm:grid-cols-3" />
+          <Section title="Footer">
             <Choice name="Footer" value={r.layout.footer} options={PART_LABELS.footer} onChange={(v) => setLayout({ footer: v })} />
           </Section>
         </fieldset>

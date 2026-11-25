@@ -98,12 +98,56 @@ function Hero({ onReady }) {
 
   // Avoid flashing fallback content before the real slides arrive
   if (!loaded || !slide) {
-    return <div className={containerClass} />
+    return layout.hero === 'split' ? <div className="min-h-[55vh] pt-16 lg:pt-28 md:min-h-[80vh]" /> : <div className={containerClass} />
   }
 
   const isExternalLink = /^https?:\/\//.test(slide.buttonLink || '')
   const buttonClass =
     'bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 flex items-center gap-2 mx-auto w-fit'
+
+  // Split screen (e.g. Atelier): the photo on one side, the words on the
+  // other, on the shop's own background instead of over the photo
+  if (layout.hero === 'split') {
+    return (
+      <div className="grid w-full pt-16 lg:pt-28 md:grid-cols-2">
+        <div className="relative min-h-[55vh] overflow-hidden bg-gray-200 md:min-h-[80vh]">
+          {slide.mediaType === 'video' ? (
+            <video key={slide._id} src={slide.mediaUrl} className="absolute inset-0 h-full w-full object-cover" autoPlay muted playsInline loop={!multiple} onEnded={multiple ? goNext : undefined} onError={multiple ? goNext : undefined} />
+          ) : (
+            <img key={slide._id} src={slide.mediaUrl} alt={slide.heading || ''} className="absolute inset-0 h-full w-full object-cover" />
+          )}
+        </div>
+        <div className="flex flex-col justify-center px-6 py-12 sm:px-12 lg:px-20">
+          <OpenStatusBadge className="mb-4 self-start" />
+          {slide.heading && <h1 className="font-poppins text-3xl font-bold leading-tight text-gray-900 sm:text-5xl">{slide.heading}</h1>}
+          {slide.text && <p className="mt-4 max-w-md text-lg text-gray-600">{slide.text}</p>}
+          {slide.buttonLabel && slide.buttonLink && (
+            isExternalLink ? (
+              <a href={slide.buttonLink} target="_blank" rel="noreferrer" className={`${buttonClass} mx-0 mt-8`}>
+                {slide.buttonLabel} <ArrowRightIcon className="h-5 w-5" />
+              </a>
+            ) : (
+              <Link to={slide.buttonLink} className={`${buttonClass} mx-0 mt-8`}>
+                {slide.buttonLabel} <ArrowRightIcon className="h-5 w-5" />
+              </Link>
+            )
+          )}
+          {multiple && (
+            <div className="mt-10 flex gap-3">
+              {slides.map((s, index) => (
+                <button
+                  key={s._id || index}
+                  onClick={() => setCurrentSlide(index)}
+                  aria-label={`Slide ${index + 1}`}
+                  className={`h-1.5 rounded-full transition-all ${index === currentSlide ? 'w-10 bg-gray-900' : 'w-5 bg-gray-300'}`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className={containerClass}>

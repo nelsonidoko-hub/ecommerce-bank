@@ -82,6 +82,10 @@ function ThemePreview({ theme, compact = false }) {
     }
   }
 
+  // Structure: packs' custom menus look like the standard one in this preview
+  const nav = ['centered', 'search'].includes(layout.nav) ? layout.nav : 'standard'
+  const home = layout.home
+
   const footerClass =
     layout.footer === 'light'
       ? 'border-t border-gray-200 bg-white text-gray-500'
@@ -93,7 +97,32 @@ function ThemePreview({ theme, compact = false }) {
       style={style}
       aria-hidden="true"
     >
-      {/* Menu bar */}
+      {/* Menu bar: the template's menu style */}
+      {nav === 'centered' ? (
+        <div className={`border-b border-gray-200 text-center ${pad}`}>
+          <div className="flex items-center justify-between">
+            <span />
+            <span className={`font-poppins font-bold ${compact ? 'text-[11px] tracking-[0.2em]' : 'text-xl tracking-[0.25em]'}`}>YOUR STORE</span>
+            <span className="font-poppins text-gray-600">Cart (0)</span>
+          </div>
+          <div className="font-poppins mt-1 flex justify-center gap-3 text-gray-600">
+            <span>{set.menu[0]}</span>
+            <span>{set.menu[1]}</span>
+          </div>
+        </div>
+      ) : nav === 'search' ? (
+        <div className="border-b border-gray-200">
+          <div className={`flex items-center gap-2 ${pad}`}>
+            <span className="font-poppins shrink-0 font-bold">YOUR STORE</span>
+            <span className={`flex-1 rounded-md border border-gray-300 text-gray-400 ${compact ? 'px-1 text-[8px]' : 'px-3 py-1'}`}>Search products…</span>
+            <span className="font-poppins shrink-0 text-gray-600">Cart (0)</span>
+          </div>
+          <div className={`font-poppins flex gap-3 border-t border-gray-100 text-gray-600 ${compact ? 'px-2 py-0.5' : 'px-4 py-1.5'}`}>
+            <span>{set.menu[0]}</span>
+            <span>{set.menu[1]}</span>
+          </div>
+        </div>
+      ) : (
       <div className={`flex items-center justify-between border-b border-gray-200 ${pad}`}>
         <div className="font-poppins flex gap-2 text-gray-600">
           <span>{set.menu[0]}</span>
@@ -102,8 +131,20 @@ function ThemePreview({ theme, compact = false }) {
         <span className="font-poppins font-bold tracking-wide">YOUR STORE</span>
         <span className="font-poppins text-gray-600">Cart (0)</span>
       </div>
+      )}
 
-      {/* Banner */}
+      {/* Banner: full, compact, slim, split screen, or none */}
+      {layout.hero === 'none' ? null : layout.hero === 'split' ? (
+        <div className="grid grid-cols-2">
+          <div className={compact ? 'h-16' : 'h-48'} style={photos.hero ? photoStyle(photos.hero) : pictureStyle} />
+          <div className={`flex flex-col justify-center ${compact ? 'px-2' : 'px-6'}`}>
+            <h2 className={`font-poppins font-bold ${headline}`}>{set.banner}</h2>
+            <p className="mt-1 text-gray-500">Shop the new collection</p>
+            <span className={`mt-2 self-start bg-gray-900 text-white ${compact ? 'px-1.5 py-0.5' : 'px-4 py-2'}`}>Shop now</span>
+          </div>
+        </div>
+      ) : (
+        <>
       <div className={`bg-gray-700 text-center text-white ${bannerPad}`} style={photos.hero ? { ...photoStyle(photos.hero), boxShadow: 'inset 0 0 0 999px rgba(0,0,0,0.35)' } : undefined}>
         {!photos.hero && <p className={compact ? 'text-[10px] leading-none' : 'text-2xl leading-none'}>{products.slice(0, 3).map((p) => p.icon).join(' ')}</p>}
         <h2 className={`font-poppins mt-1 font-bold ${headline}`}>{set.banner}</h2>
@@ -116,8 +157,42 @@ function ThemePreview({ theme, compact = false }) {
           Shop Now
         </span>
       </div>
+        </>
+      )}
 
-      {/* Products: menu rows or a grid of cards */}
+      {/* Lookbook homepage: big category photos first */}
+      {home === 'lookbook' && (
+        <div className={`grid grid-cols-2 gap-1 ${compact ? 'p-1' : 'p-3'}`}>
+          {set.menu.map((label, i) => (
+            <div key={label} className={`relative flex items-end ${compact ? 'h-12' : 'h-32'}`} style={products[i]?.photo ? photoStyle(products[i].photo) : pictureStyle}>
+              <span className={`w-full bg-black/40 font-semibold text-white ${compact ? 'px-1 text-[8px]' : 'px-2 py-1'}`}>{label}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Products: menu rows or a grid of cards, with a category sidebar in a
+          sidebar catalog, or one big product in a single-product homepage */}
+      {home === 'spotlight' ? (
+        <div className={`grid grid-cols-2 items-center gap-2 ${compact ? 'p-2' : 'p-5'}`}>
+          <div className={compact ? 'h-16' : 'h-40'} style={products[0]?.photo ? photoStyle(products[0].photo) : pictureStyle} />
+          <div>
+            <p className="font-poppins font-bold">{products[0]?.name}</p>
+            <p className="mt-1 text-gray-600">{products[0]?.price}</p>
+            <span className={`mt-2 inline-block bg-blue-600 text-white ${compact ? 'px-1.5 py-0.5' : 'px-4 py-2'}`}>Buy now</span>
+          </div>
+        </div>
+      ) : (
+        <div className={home === 'sidebar' ? 'flex' : ''}>
+          {home === 'sidebar' && (
+            <div className={`shrink-0 border-r border-gray-200 text-gray-600 ${compact ? 'w-10 space-y-0.5 p-1 text-[7px]' : 'w-28 space-y-1 p-3'}`}>
+              <p className="font-semibold text-gray-400">Categories</p>
+              <p>All products</p>
+              <p>{set.menu[0]}</p>
+              <p>{set.menu[1]}</p>
+            </div>
+          )}
+          <div className={home === 'sidebar' ? 'min-w-0 flex-1' : ''}>
       {layout.grid === 'list' ? (
         <div className={compact ? 'px-2 py-1' : 'px-4 py-2'}>
           {products.map((product) => (
@@ -180,6 +255,9 @@ function ThemePreview({ theme, compact = false }) {
                 {addButton()}
               </div>
             ))}
+          </div>
+        </div>
+      )}
           </div>
         </div>
       )}

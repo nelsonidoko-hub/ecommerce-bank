@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import { getCategories } from '../services/categoryService'
 import { getLogo } from '../services/logoService'
 import { useSettings } from '../hooks/useSettings'
+import { useStoreTheme } from '../hooks/useStoreTheme'
 import { homeSectionsOf } from '../utils/sections'
 import {
   Bars3Icon,
@@ -18,8 +19,10 @@ import {
   ClipboardDocumentListIcon,
 } from '@heroicons/react/24/outline'
 
-function Navbar() {
+// variant: the menu style ('standard' | 'centered' | 'search'), from the template
+function Navbar({ variant = 'standard' }) {
   const { settings } = useSettings()
+  const { layout } = useStoreTheme()
   const storeName = settings.storeName
   const { user, logout } = useAuth()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -65,7 +68,8 @@ function Navbar() {
   const isHomePage = location.pathname === '/'
   // See-through only over the banner slideshow, and only when it comes first
   const heroFirst = homeSectionsOf(settings).find((sec) => sec.enabled !== false)?.type === 'hero'
-  const showTransparent = isHomePage && heroFirst && !isScrolled
+  // The search-bar menu is always solid; a hidden banner means nothing to see through
+  const showTransparent = isHomePage && heroFirst && variant !== 'search' && !['none', 'split'].includes(layout.hero) && !isScrolled
   const textColor = showTransparent ? 'text-white' : 'text-gray-800'
 
   const { cartItems, toggleCart } = useCart()
@@ -92,17 +96,8 @@ function Navbar() {
     }
   }, [isMenuOpen])
 
-  return (
-    <nav
-      className={
-        showTransparent
-          ? 'absolute top-0 left-0 w-full z-50 text-white bg-transparent'
-          : 'fixed top-0 left-0 w-full bg-white z-50 text-gray-800 shadow-md'
-      }
-    >
-      {/* Desktop layout */}
-      <div className="hidden lg:grid lg:grid-cols-3 items-center border-b p-10 py-2">
-        <div className="flex xl:gap-6 gap-4 flex-wrap items-center">
+  const categoryLinks = (
+    <>
           {categories.map((cat) => (
             <div key={cat._id} className="relative flex items-center gap-1 shrink-0">
               <div className="flex items-center gap-1">
@@ -140,9 +135,9 @@ function Navbar() {
               )}
             </div>
           ))}
-        </div>
-
-        <div className="flex justify-center">
+    </>
+  )
+  const logoLink = (
           <Link to="/" className="text-xl font-bold text-blue-600">
             {logo?.imageUrl ? (
               <img src={logo.imageUrl} alt={logo.altText || storeName || 'Shop logo'} className="h-8 w-auto object-contain" />
@@ -150,9 +145,9 @@ function Navbar() {
               <span className={`font-poppins text-lg font-bold ${showTransparent ? 'text-white' : 'text-gray-900'}`}>{storeName}</span>
             )}
           </Link>
-        </div>
-
-        <div className="flex justify-end gap-6">
+  )
+  const actionsNoSearch = (
+    <>
           {user ? (
             <button
               onClick={logout}
@@ -176,12 +171,102 @@ function Navbar() {
           )}
 
           
-          {/* search start */}
+
+          <button
+            onClick={toggleCart}
+            className={`flex items-center gap-1 capitalize font-poppins hover:text-blue-600 ${textColor} font-medium tracking-wide transition-colors whitespace-nowrap`}
+          >
+            <ShoppingBagIcon className="h-5 w-5" /> {totalItems}
+          </button>
+    </>
+  )
+  const actions = (
+    <>
+          {user ? (
+            <button
+              onClick={logout}
+              className={`capitalize font-poppins hover:cursor-pointer hover:text-blue-600 ${textColor} font-medium tracking-wide transition-colors whitespace-nowrap`}
+            >
+              Logout
+            </button>
+          ) : (
+            <Link
+              to="/login"
+              className={`${textColor} capitalize font-poppins hover:text-blue-600 font-medium tracking-wide transition-colors whitespace-nowrap`}
+            >
+              Login
+            </Link>
+          )}
+
+          {user && (
+            <Link to="/orders" className={`capitalize font-poppins hover:text-blue-600 ${textColor} font-medium tracking-wide whitespace-nowrap`}>
+              Orders
+            </Link>
+          )}
+
+          
           <button onClick={() => setIsSearchOpen(!isSearchOpen)}>
             <MagnifyingGlassIcon className={`h-5 w-5 ${textColor}`} />
           </button>
 
-          {isSearchOpen && (
+          <button
+            onClick={toggleCart}
+            className={`flex items-center gap-1 capitalize font-poppins hover:text-blue-600 ${textColor} font-medium tracking-wide transition-colors whitespace-nowrap`}
+          >
+            <ShoppingBagIcon className="h-5 w-5" /> {totalItems}
+          </button>
+    </>
+  )
+
+  return (
+    <nav
+      className={
+        showTransparent
+          ? 'absolute top-0 left-0 w-full z-50 text-white bg-transparent'
+          : 'fixed top-0 left-0 w-full bg-white z-50 text-gray-800 shadow-md'
+      }
+    >
+      {/* Desktop layout: one of the menu styles (storefront/parts.js) */}
+      {variant === 'search' ? (
+        <div className="hidden lg:block border-b">
+          <div className="flex items-center gap-8 px-10 py-3">
+            <div className="shrink-0">{logoLink}</div>
+            <form onSubmit={handleSearchSubmit} className="flex flex-1 max-w-3xl" role="search">
+              <input
+                type="search"
+                aria-label="Search products"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search for products, brands and categories"
+                className="min-w-0 flex-1 rounded-l-md border border-gray-300 bg-white px-4 py-2 text-gray-900 placeholder:text-gray-400 focus:outline-none"
+              />
+              <button type="submit" className="rounded-r-md bg-blue-600 px-5 font-medium text-white hover:bg-blue-700">
+                Search
+              </button>
+            </form>
+            <div className="ml-auto flex items-center justify-end gap-6">{actionsNoSearch}</div>
+          </div>
+          <div className="flex items-center gap-6 border-t border-gray-100 px-10 py-2 text-sm">{categoryLinks}</div>
+        </div>
+      ) : variant === 'centered' ? (
+        <div className="hidden lg:block border-b">
+          <div className="grid grid-cols-3 items-center px-10 pt-4">
+            <div />
+            <div className="flex justify-center [&_span]:text-2xl [&_span]:tracking-[0.2em] [&_img]:h-12">{logoLink}</div>
+            <div className="flex justify-end gap-6">{actions}</div>
+          </div>
+          <div className="flex justify-center gap-8 px-10 py-3">{categoryLinks}</div>
+        </div>
+      ) : (
+        <div className="hidden lg:grid lg:grid-cols-3 items-center border-b p-10 py-2">
+          <div className="flex xl:gap-6 gap-4 flex-wrap items-center">{categoryLinks}</div>
+          <div className="flex justify-center">{logoLink}</div>
+          <div className="flex justify-end gap-6">{actions}</div>
+        </div>
+      )}
+
+      {/* Search box (desktop icon and phone icon both open it) */}
+      {isSearchOpen && (
           <div
             className="fixed inset-0 bg-black/40 z-[60] flex items-start justify-center pt-24 px-4"
             onClick={() => setIsSearchOpen(false)}
@@ -213,15 +298,6 @@ function Navbar() {
           </div>
           )}
 
-          {/* search ends */}
-          <button
-            onClick={toggleCart}
-            className={`flex items-center gap-1 capitalize font-poppins hover:text-blue-600 ${textColor} font-medium tracking-wide transition-colors whitespace-nowrap`}
-          >
-            <ShoppingBagIcon className="h-5 w-5" /> {totalItems}
-          </button>
-        </div>
-      </div>
 
       {/* Mobile Top Bar */}
       <div
@@ -246,7 +322,7 @@ function Navbar() {
         )}
 
         <div className="flex items-center gap-4">
-          <button className={`p-1 ${textColor}`}>
+          <button onClick={() => setIsSearchOpen(true)} className={`p-1 ${textColor}`} aria-label="Search">
             <MagnifyingGlassIcon className="h-5 w-5" />
           </button>
           <button

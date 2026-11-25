@@ -168,7 +168,48 @@ export const TEMPLATES = {
     headingWeight: 0,
     layout: { card: 'tile', grid: 'grid', columns: 4, footer: 'light', hero: 'compact', search: false },
   },
+  // The first templates with their own page structure (menu, banner and
+  // homepage layout), not just a different look
+  gadget: {
+    id: 'gadget',
+    label: 'Gadget',
+    bestFor: 'Electronics and phone shops with many products',
+    description: 'Built like a big electronics store: logo, a wide search bar and cart on top, a category sidebar beside the products, and no big banner in the way.',
+    brand: '#2563eb',
+    ink: '#0f172a',
+    surface: '#f1f5f9',
+    headingFont: 'epilogue',
+    bodyFont: 'epilogue',
+    radius: 'soft',
+    uppercase: false,
+    headingWeight: 0,
+    layout: { card: 'spec', grid: 'grid', columns: 4, footer: 'dark', hero: 'none', search: false, nav: 'search', home: 'sidebar' },
+  },
+  atelier: {
+    id: 'atelier',
+    label: 'Atelier',
+    bestFor: 'Fashion boutiques and designers',
+    description: 'Like a fashion magazine: a centred logo, a split banner with a big photo beside the words, and large "shop by category" pictures before the products.',
+    brand: '#1c1917',
+    ink: '#1c1917',
+    surface: '#faf7f2',
+    headingFont: 'playfair',
+    bodyFont: 'epilogue',
+    radius: 'square',
+    uppercase: false,
+    headingWeight: 500,
+    layout: { card: 'borderless', grid: 'grid', columns: 3, footer: 'light', hero: 'split', search: false, nav: 'centered', home: 'lookbook' },
+  },
 }
+
+// Every template's structure: the 8 originals use the standard menu and
+// homepage (existing shops look exactly as before)
+for (const t of Object.values(TEMPLATES)) t.layout = { nav: 'standard', home: 'sections', ...t.layout }
+
+// Structure parts. Ids of custom parts from template packs (storefront/packs)
+// are accepted too: anything unknown falls back to the standard part.
+export const HERO_STYLES = ['full', 'compact', 'slim', 'split', 'none']
+const isPartId = (v) => typeof v === 'string' && /^[a-z][a-z0-9-]{1,39}$/.test(v)
 
 export const TEMPLATE_LIST = Object.values(TEMPLATES)
 
@@ -251,7 +292,9 @@ export function recipeTemplate(id, recipe, meta = {}) {
       grid: pick(l.grid, (v) => v === 'grid' || v === 'list', c.layout.grid),
       columns: pick(Number(l.columns), (v) => v >= 2 && v <= 5, c.layout.columns),
       footer: pick(l.footer, (v) => v === 'dark' || v === 'light', c.layout.footer),
-      hero: pick(l.hero, (v) => ['full', 'compact', 'slim'].includes(v), c.layout.hero),
+      hero: pick(l.hero, (v) => HERO_STYLES.includes(v), c.layout.hero),
+      nav: pick(l.nav, isPartId, 'standard'),
+      home: pick(l.home, isPartId, 'sections'),
       search: l.search === true,
     },
   }
