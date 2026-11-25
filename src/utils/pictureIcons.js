@@ -48,15 +48,248 @@ export const PICTURE_ICONS = [
 ]
 export const pictureIcon = (label) => PICTURE_ICONS.find(([re]) => re.test(String(label)))?.[1] || '🛍️'
 
-// Dummy products for template previews, by the kind of shop (the sample set)
+// Dummy products for template previews, by the kind of shop (the sample set).
+// Generated from the backend sample products so names match the Studio photo
+// slots exactly (a photo uploaded for "Electric Kettle 1.7L" shows here too).
 export const PREVIEW_SETS = {
-  classic: { menu: ['Clothing', 'Accessories'], banner: 'New Season', products: [['Cotton Tee', '₦8,500', 'Soft and light'], ['Canvas Tote Bag', '₦9,000', 'Fits everything'], ['Leather Belt', '₦6,000', 'Made to last'], ['Denim Jacket', '₦24,000', 'Everyday classic']] },
-  minimal: { menu: ['Dresses', 'Accessories'], banner: 'The Edit', products: [['Linen Wrap Dress', '₦28,000', 'Soft linen'], ['Silk Scarf', '₦9,500', 'Hand finished'], ['Woven Clutch', '₦15,000', 'Evening ready'], ['Straw Sun Hat', '₦7,500', 'Wide brim']] },
-  bold: { menu: ['Hoodies', 'Sneakers'], banner: 'DROP 04', products: [['Graphic Hoodie', '₦22,000', 'Heavyweight'], ['High-Top Sneakers', '₦35,000', 'Street ready'], ['Snapback Cap', '₦8,000', 'One size'], ['Cargo Pants', '₦19,000', 'Six pockets']] },
-  fresh: { menu: ['Meals', 'Drinks'], banner: 'Hot & Fresh Today', products: [['Party Jollof Rice', '₦4,500', 'Smoky, with chicken'], ['Small Chops Platter', '₦6,000', 'Puff-puff, samosa'], ['Chilled Zobo', '₦1,000', 'Ginger and pineapple'], ['Fried Rice Special', '₦4,000', 'With plantain']] },
-  catalog: { menu: ['Kitchen', 'Home'], banner: 'Deals this week', products: [['Electric Kettle', '₦18,500', '1.7 litres'], ['Rechargeable Fan', '₦32,000', '12 hours'], ['Blender 1.5L', '₦27,000', '3 speeds'], ['Frying Pan', '₦12,000', 'Non-stick']] },
-  glow: { menu: ['Skincare', 'Body'], banner: 'Your glow, naturally', products: [['Vitamin C Serum', '₦12,500', 'Brightening'], ['Raw Shea Butter', '₦4,000', 'Pure, unrefined'], ['Tinted Lip Oil', '₦5,500', 'Soft shine'], ['Body Mist', '₦7,000', 'Fresh floral']] },
-  tech: { menu: ['Audio', 'Power'], banner: 'Latest gadgets', products: [['Wireless Earbuds', '₦25,000', '30h battery'], ['Power Bank 20000mAh', '₦18,000', 'Fast charge'], ['Smart Watch', '₦38,000', 'Heart rate'], ['Bluetooth Speaker', '₦21,000', 'Waterproof']] },
-  playful: { menu: ['Toys', 'Baby'], banner: 'Fun for little ones', products: [['Plush Teddy Bear', '₦9,000', 'Extra soft'], ['Building Blocks', '₦12,000', '120 pieces'], ['Baby Romper', '₦6,500', 'Pure cotton'], ['Crayon Art Kit', '₦5,000', '48 colours']] },
+  classic: {
+    menu: [
+      "Clothing",
+      "Accessories"
+    ],
+    banner: "New Season",
+    products: [
+      [
+        "Classic Cotton Tee",
+        "₦8,500",
+        "Soft everyday tee in…"
+      ],
+      [
+        "Canvas Tote Bag",
+        "₦6,500",
+        "Roomy tote for work,…"
+      ],
+      [
+        "Leather Belt",
+        "₦7,000",
+        "Full-grain leather with…"
+      ],
+      [
+        "Denim Jacket",
+        "₦22,000",
+        "A wardrobe staple that…"
+      ]
+    ]
+  },
+  minimal: {
+    menu: [
+      "Women",
+      "Accessories"
+    ],
+    banner: "The Edit",
+    products: [
+      [
+        "Linen Wrap Dress",
+        "₦28,000",
+        "Relaxed linen dress…"
+      ],
+      [
+        "Silk Scarf",
+        "₦12,000",
+        "Lightweight silk in a…"
+      ],
+      [
+        "Wide-Leg Trousers",
+        "₦21,000",
+        "Tailored drape,…"
+      ],
+      [
+        "Straw Sun Hat",
+        "₦9,000",
+        "Handwoven straw with a…"
+      ]
+    ]
+  },
+  bold: {
+    menu: [
+      "Streetwear",
+      "Sneakers"
+    ],
+    banner: "DROP 04",
+    products: [
+      [
+        "Graphic Hoodie",
+        "₦25,000",
+        "Heavyweight fleece,…"
+      ],
+      [
+        "Cargo Pants",
+        "₦23,000",
+        "Six pockets, tapered leg"
+      ],
+      [
+        "High-Top Sneakers",
+        "₦42,000",
+        "Chunky sole, all-day grip"
+      ],
+      [
+        "Snapback Cap",
+        "₦8,000",
+        "Flat brim, embroidered…"
+      ]
+    ]
+  },
+  fresh: {
+    menu: [
+      "Meals",
+      "Drinks"
+    ],
+    banner: "Hot & Fresh Today",
+    products: [
+      [
+        "Party Jollof Rice",
+        "₦3,500",
+        "Smoky jollof with fried…"
+      ],
+      [
+        "Fried Rice Special",
+        "₦3,500",
+        "With mixed vegetables,…"
+      ],
+      [
+        "Small Chops Platter",
+        "₦6,000",
+        "Puff-puff, samosa,…"
+      ],
+      [
+        "Ofada Rice & Sauce",
+        "₦4,000",
+        "Local rice with spicy…"
+      ]
+    ]
+  },
+  catalog: {
+    menu: [
+      "Home",
+      "Kitchen"
+    ],
+    banner: "Deals this week",
+    products: [
+      [
+        "Non-Stick Frying Pan",
+        "₦12,500",
+        "28 cm, works on gas and…"
+      ],
+      [
+        "Electric Kettle 1.7L",
+        "₦15,000",
+        "Boils in under 4 minutes"
+      ],
+      [
+        "Rechargeable Fan",
+        "₦28,000",
+        "Up to 8 hours on one…"
+      ],
+      [
+        "LED Bulb Pack of 4",
+        "₦4,500",
+        "Warm white, low power"
+      ]
+    ]
+  },
+  glow: {
+    menu: [
+      "Skincare",
+      "Body"
+    ],
+    banner: "Your glow, naturally",
+    products: [
+      [
+        "Vitamin C Serum",
+        "₦14,000",
+        "Brightening serum for…"
+      ],
+      [
+        "Raw Shea Butter",
+        "₦4,500",
+        "Pure unrefined shea…"
+      ],
+      [
+        "Hydrating Face Cream",
+        "₦12,000",
+        "Light, non-greasy, all…"
+      ],
+      [
+        "Body Mist",
+        "₦9,000",
+        "Soft floral scent that…"
+      ]
+    ]
+  },
+  tech: {
+    menu: [
+      "Phones",
+      "Audio"
+    ],
+    banner: "Latest gadgets",
+    products: [
+      [
+        "Wireless Earbuds",
+        "₦25,000",
+        "Noise reduction and…"
+      ],
+      [
+        "Power Bank 20000mAh",
+        "₦18,000",
+        "Charges two phones at once"
+      ],
+      [
+        "Fast Charger 25W",
+        "₦9,000",
+        "USB-C fast charging"
+      ],
+      [
+        "Bluetooth Speaker",
+        "₦32,000",
+        "Waterproof, 12 hours of…"
+      ]
+    ]
+  },
+  playful: {
+    menu: [
+      "Baby",
+      "Toys"
+    ],
+    banner: "Fun for little ones",
+    products: [
+      [
+        "Baby Romper",
+        "₦7,500",
+        "Soft cotton with easy…"
+      ],
+      [
+        "Plush Teddy Bear",
+        "₦9,000",
+        "Extra soft and safe for…"
+      ],
+      [
+        "Building Blocks Set",
+        "₦15,000",
+        "120 colourful pieces"
+      ],
+      [
+        "Kids School Backpack",
+        "₦12,000",
+        "Padded straps, bottle…"
+      ]
+    ]
+  }
 }
-export const previewSet = (id) => PREVIEW_SETS[id] || PREVIEW_SETS.classic
+
+// A template's own products ("My own products" in the Studio), as a preview set
+function customSet(samples) {
+  const naira = (n) => `₦${Number(n || 0).toLocaleString('en-NG')}`
+  const products = (samples.products || []).slice(0, 4).map((p) => [p.name, naira(p.price), (p.description || '').slice(0, 26), p.image || ''])
+  return { menu: (samples.categories || []).slice(0, 2).map((c) => c.label), banner: samples.heading || 'Welcome', products }
+}
+export const previewSet = (id, samples) => (id === 'custom' && samples?.products?.length ? customSet(samples) : PREVIEW_SETS[id] || PREVIEW_SETS.classic)

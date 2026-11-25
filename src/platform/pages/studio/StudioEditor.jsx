@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeftIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline'
 import ThemePreview from '../../../components/ThemePreview'
 import { TEMPLATE_LIST, TEMPLATES, isHex } from '../../../utils/themes'
+import { PREVIEW_SETS } from '../../../utils/pictureIcons'
 import { getAccount, errorMessage } from '../../../services/platformService'
 import { getStudioTemplate, createStudioTemplate, updateStudioTemplate, setStudioStatus, deleteStudioTemplate, getStudioOptions, uploadStudioPicture } from '../../../services/studioService'
 import { forgetStudioGallery } from '../../usePlatformData'
@@ -17,7 +18,17 @@ const SAMPLE_SETS = {
   glow: 'Beauty and skincare',
   tech: 'Phones and gadgets',
   playful: 'Babies and kids',
+  custom: 'My own products (type them in)',
 }
+// The server keeps category names (e.g. "grains-tubers"); the editor works with labels
+const withLabels = (samples) => ({
+  ...samples,
+  products: (samples.products || []).map((p) => ({ ...p, category: samples.categories?.find((c) => c.name === p.category)?.label || p.category })),
+})
+// What the live preview shows while typing (skips half-filled rows)
+const previewSamples = (samples) =>
+  samples && { ...samples, categories: (samples.categories || []).filter((c) => c.label.trim()), products: (samples.products || []).filter((p) => p.name.trim()) }
+
 const input = 'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-emerald-600 focus:outline-none'
 const slugify = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 30)
 
@@ -72,7 +83,85 @@ function Colour({ label, value, onChange, optional }) {
   )
 }
 
-const blank = () => ({ key: '', label: '', bestFor: '', description: '', sampleSet: 'classic', recipe: recipeFromBuiltIn('classic'), pictures: {}, builtIn: '' })
+const blank = () => ({ key: '', label: '', bestFor: '', description: '', sampleSet: 'classic', recipe: recipeFromBuiltIn('classic'), pictures: {}, builtIn: '', samples: null })
+
+// Starting point when switching to "My own products": the chosen set's
+// categories and first products (and any photos already added for them)
+function samplesFrom(set, names, pictures) {
+  const preset = PREVIEW_SETS[set] || PREVIEW_SETS.classic
+  const products = (names?.length ? names.slice(0, 6) : preset.products.map((p) => p[0])).map((name) => {
+    const known = preset.products.find((p) => p[0] === name)
+    return { name, price: known ? Number(known[1].replace(/[^0-9]/g, '')) : 5000, category: preset.menu[0], description: '', image: pictures?.products?.[name] || '' }
+  })
+  return { heading: preset.banner, text: '', categories: preset.menu.map((label) => ({ label })), products }
+}
+
+// "My own products": the template's own menu (categories) and products
+function OwnProducts({ samples, onChange, disabled }) {
+  const cats = samples.categories || []
+  const products = samples.products || []
+  const setProduct = (i, patch) => onChange({ ...samples, products: products.map((p, j) => (j === i ? { ...p, ...patch } : p)) })
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div>
+          <label className="mb-1 block text-xs font-medium text-slate-700">Banner heading</label>
+          <input maxLength={60} aria-label="Banner heading" className={input} placeholder="e.g. Straight from the farm" value={samples.heading || ''} onChange={(e) => onChange({ ...samples, heading: e.target.value })} />
+        </div>
+        <div>
+          <label className="mb-1 block text-xs font-medium text-slate-700">Banner line</label>
+          <input maxLength={120} aria-label="Banner line" className={input} placeholder="e.g. Harvested this week" value={samples.text || ''} onChange={(e) => onChange({ ...samples, text: e.target.value })} />
+        </div>
+      </div>
+
+      <div>
+        <p className="mb-1 text-xs font-medium text-slate-700">Categories (these become the shop's menu, up to 8)</p>
+        <div className="space-y-2">
+          {cats.map((c, i) => (
+            <div key={i} className="flex gap-2">
+              <input maxLength={30} aria-label={`Category ${i + 1}`} className={input} placeholder="e.g. Vegetables" value={c.label} onChange={(e) => onChange({ ...samples, categories: cats.map((x, j) => (j === i ? { label: e.target.value } : x)) })} />
+              {cats.length > 1 && (
+                <button type="button" disabled={disabled} onClick={() => onChange({ ...samples, categories: cats.filter((_, j) => j !== i) })} className="shrink-0 text-xs text-slate-500 underline">Remove</button>
+              )}
+            </div>
+          ))}
+        </div>
+        {cats.length < 8 && (
+          <button type="button" disabled={disabled} onClick={() => onChange({ ...samples, categories: [...cats, { label: '' }] })} className="mt-2 text-sm font-medium text-emerald-700">+ Add category</button>
+        )}
+      </div>
+
+      <div>
+        <p className="mb-1 text-xs font-medium text-slate-700">Products (up to 12)</p>
+        <div className="space-y-3">
+          {products.map((p, i) => (
+            <div key={i} className="space-y-2 rounded-lg border border-slate-200 p-3">
+              <div className="grid gap-2 sm:grid-cols-[1fr_8rem_10rem]">
+                <input maxLength={60} aria-label={`Product ${i + 1} name`} className={input} placeholder="Product name" value={p.name} onChange={(e) => setProduct(i, { name: e.target.value })} />
+                <input type="number" min={0} aria-label={`Product ${i + 1} price`} className={input} placeholder="Price ₦" value={p.price} onChange={(e) => setProduct(i, { price: e.target.value })} />
+                <select aria-label={`Product ${i + 1} category`} className={input} value={p.category} onChange={(e) => setProduct(i, { category: e.target.value })}>
+                  {cats.filter((c) => c.label.trim()).map((c) => <option key={c.label} value={c.label}>{c.label}</option>)}
+                </select>
+              </div>
+              <input maxLength={200} aria-label={`Product ${i + 1} description`} className={input} placeholder="Short description (optional)" value={p.description || ''} onChange={(e) => setProduct(i, { description: e.target.value })} />
+              <div className="flex items-center gap-2">
+                <div className="min-w-0 flex-1">
+                  <PhotoSlot label="Photo" url={p.image} onChange={(u) => setProduct(i, { image: u })} disabled={disabled} />
+                </div>
+                {products.length > 1 && (
+                  <button type="button" disabled={disabled} onClick={() => onChange({ ...samples, products: products.filter((_, j) => j !== i) })} className="shrink-0 text-xs text-red-600 underline">Remove product</button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+        {products.length < 12 && (
+          <button type="button" disabled={disabled} onClick={() => onChange({ ...samples, products: [...products, { name: '', price: '', category: cats[0]?.label || '', description: '', image: '' }] })} className="mt-2 text-sm font-medium text-emerald-700">+ Add product</button>
+        )}
+      </div>
+    </div>
+  )
+}
 
 // One photo slot: thumbnail, upload, remove
 function PhotoSlot({ label, url, onChange, disabled }) {
@@ -131,7 +220,7 @@ function Editor() {
     getStudioTemplate(id)
       .then((data) => {
         setSaved(data)
-        setT({ key: data.key, label: data.label, bestFor: data.bestFor, description: data.description, sampleSet: data.sampleSet, recipe: data.recipe, pictures: data.pictures || {}, builtIn: data.builtIn || '' })
+        setT({ key: data.key, label: data.label, bestFor: data.bestFor, description: data.description, sampleSet: data.sampleSet, recipe: data.recipe, pictures: data.pictures || {}, builtIn: data.builtIn || '', samples: data.samples ? withLabels(data.samples) : null })
       })
       .catch((err) => setError(errorMessage(err, 'Could not load this template.')))
   }, [id, isNew])
@@ -214,10 +303,11 @@ function Editor() {
             </div>
           </Section>
 
-          <Section title="Sample products" hint="What a new shop starts with (with pictures), and what the preview shows. Merchants replace them with their own.">
-            <select aria-label="Sample products" className={input} value={t.sampleSet} onChange={(e) => setT({ ...t, sampleSet: e.target.value })}>
+          <Section title="Sample products" hint="What a new shop starts with (menu, products and pictures), and what the preview shows. Merchants replace them with their own. Nothing fits? Choose “My own products” and type them in.">
+            <select aria-label="Sample products" className={input} value={t.sampleSet} onChange={(e) => setT({ ...t, sampleSet: e.target.value, samples: e.target.value === 'custom' ? t.samples || samplesFrom(t.sampleSet, sampleNames, pics) : t.samples })}>
               {Object.entries(SAMPLE_SETS).map(([k, label]) => <option key={k} value={k}>{label}</option>)}
             </select>
+            {t.sampleSet === 'custom' && t.samples && <OwnProducts samples={t.samples} onChange={(samples) => setT({ ...t, samples })} disabled={locked} />}
           </Section>
 
           <Section
@@ -228,7 +318,7 @@ function Editor() {
               <PhotoSlot label="Top banner (big picture)" url={pics.hero} onChange={(u) => setPicture('hero', u)} disabled={locked} />
               <PhotoSlot label="Middle banner" url={pics.banner} onChange={(u) => setPicture('banner', u)} disabled={locked} />
               <PhotoSlot label="Featured picture" url={pics.featured} onChange={(u) => setPicture('featured', u)} disabled={locked} />
-              {sampleNames.map((name) => (
+              {t.sampleSet !== 'custom' && sampleNames.map((name) => (
                 <PhotoSlot key={name} label={name} url={pics.products?.[name]} onChange={(u) => setProductPicture(name, u)} disabled={locked} />
               ))}
             </div>
@@ -350,7 +440,7 @@ function Editor() {
             {saved && <StatusChip status={saved.status} />}
           </div>
           <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-            <ThemePreview theme={{ template: t.key || 'new', recipe: r, sampleSet: t.sampleSet, pictures: pics }} />
+            <ThemePreview theme={{ template: t.key || 'new', recipe: r, sampleSet: t.sampleSet, pictures: pics, samples: t.sampleSet === 'custom' ? previewSamples(t.samples) : null }} />
           </div>
           {saved && (
             <p className="mt-2 text-xs text-slate-500">

@@ -28,7 +28,7 @@ function BuiltIns({ edits, onError }) {
         return (
           <div key={t.id}>
             <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-              <ThemePreview theme={e ? { template: t.id, recipe: e.recipe, sampleSet: e.sampleSet, pictures: e.pictures } : { template: t.id }} compact />
+              <ThemePreview theme={e ? { template: t.id, recipe: e.recipe, sampleSet: e.sampleSet, pictures: e.pictures, samples: e.samples } : { template: t.id }} compact />
             </div>
             <div className="mt-1.5 flex items-center justify-between gap-1">
               <span className="text-sm font-semibold text-slate-900">{t.label}</span>
@@ -88,7 +88,7 @@ function NewOnes({ templates }) {
       {templates.map((t) => (
         <Link key={t._id} to={`/studio/${t._id}`} className="group block">
           <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm group-hover:shadow-md">
-            <ThemePreview theme={{ template: t.key, recipe: t.recipe, sampleSet: t.sampleSet, pictures: t.pictures }} compact />
+            <ThemePreview theme={{ template: t.key, recipe: t.recipe, sampleSet: t.sampleSet, pictures: t.pictures, samples: t.samples }} compact />
           </div>
           <div className="mt-2 flex items-center justify-between gap-2">
             <h3 className="font-poppins font-semibold text-slate-900">{t.label}</h3>

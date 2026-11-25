@@ -50,6 +50,6 @@ export const forgetStudioGallery = () => {
 }
 
 // What ThemePreview needs to draw any template (built-in or Studio)
-export const previewTheme = (t) => ({ template: t.id, recipe: t.studio ? t : undefined, sampleSet: t.sampleSet, pictures: t.pictures })
+export const previewTheme = (t) => ({ template: t.id, recipe: t.studio ? t : undefined, sampleSet: t.sampleSet, pictures: t.pictures, samples: t.samples })
 
 export const naira = (n) => `₦${Number(n || 0).toLocaleString('en-NG')}`

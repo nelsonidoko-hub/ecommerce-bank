@@ -236,6 +236,7 @@ export function recipeTemplate(id, recipe, meta = {}) {
     description: meta.description || '',
     sampleSet: meta.sampleSet || 'classic',
     pictures: meta.pictures && typeof meta.pictures === 'object' ? meta.pictures : null,
+    samples: meta.samples && typeof meta.samples === 'object' ? meta.samples : null,
     studio: true,
     brand: colour(recipe.brand),
     ink: colour(recipe.ink),

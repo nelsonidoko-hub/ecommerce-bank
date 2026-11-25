@@ -24,10 +24,10 @@ function ThemePreview({ theme, compact = false }) {
 
   // Dummy products with pictures that show what they are, matched to the
   // kind of shop, so anyone can tell at a glance what the template is for
-  const set = previewSet(theme?.sampleSet || (TEMPLATES[theme?.template] ? theme.template : 'classic'))
+  const set = previewSet(theme?.sampleSet || (TEMPLATES[theme?.template] ? theme.template : 'classic'), theme?.samples)
   // Real photos from the Template Studio, where the template has them
   const photos = theme?.pictures && typeof theme.pictures === 'object' ? theme.pictures : {}
-  const products = set.products.map(([name, price, note]) => ({ name, price, note, icon: pictureIcon(name), photo: photos.products?.[name] || '' }))
+  const products = set.products.map(([name, price, note, own]) => ({ name, price, note, icon: pictureIcon(name), photo: own || photos.products?.[name] || '' }))
   const tint = resolved.brand || '#155dfc'
   const pictureStyle = { background: `linear-gradient(135deg, ${tint}22, ${tint}55)` }
   const photoStyle = (url) => ({ backgroundImage: `url("${url}")`, backgroundSize: 'cover', backgroundPosition: 'center' })
