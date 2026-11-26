@@ -23,7 +23,7 @@ export const SECTION_TYPES = {
       { name: 'source', label: 'Which products', kind: 'select', options: [['newest', 'Newest first'], ['bestsellers', 'Best sellers'], ['category', 'One category']] },
       { name: 'category', label: 'Category', kind: 'category', showIf: (d) => d.source === 'category' },
       { name: 'count', label: 'How many', kind: 'number', min: 1, max: 24 },
-      { name: 'layout', label: 'Show as', kind: 'select', options: [['grid', 'Grid'], ['carousel', 'Sliding row']] },
+      { name: 'layout', label: 'Show as', kind: 'select', options: [['grid', "The template's style"], ['carousel', 'Sliding row']] },
     ],
   },
   banner: {

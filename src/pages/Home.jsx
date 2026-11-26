@@ -9,6 +9,7 @@ import {
   ImageTextSection,
   TestimonialsSection,
   WhatsAppSection,
+  CategoryStrip,
 } from '../components/sections/Sections'
 import { getProducts, getProductsByCategory, getBestSellers } from '../services/productService'
 import { useSettings } from '../hooks/useSettings'
@@ -30,11 +31,12 @@ function Home() {
   )
   const [categories, setCategories] = useState([])
   useEffect(() => {
-    if (layout.home !== 'sidebar' && layout.home !== 'lookbook') return
+    const strip = layout.categories && layout.categories !== 'none'
+    if (layout.home !== 'sidebar' && layout.home !== 'lookbook' && !strip) return
     getCategories()
       .then((data) => setCategories(Array.isArray(data) ? data : []))
       .catch(() => {})
-  }, [layout.home])
+  }, [layout.home, layout.categories])
 
   const [newest, setNewest] = useState([])
   const [bestSellers, setBestSellers] = useState([])
@@ -121,7 +123,18 @@ function Home() {
     return newest
   }
 
+  // Each section sits in a wrapper the template's spacing rules use (index.css)
   function render(section) {
+    const inner = renderInner(section)
+    if (!inner) return null
+    return (
+      <div key={section.id} className="sf-block" data-type={section.type}>
+        {inner}
+      </div>
+    )
+  }
+
+  function renderInner(section) {
     const data = section.data || {}
     switch (section.type) {
       case 'hero':
@@ -156,6 +169,8 @@ function Home() {
   const heroFirst = sections[0]?.type === 'hero'
   const top = heroFirst ? render(sections[0]) : <div className="h-20 sm:h-28" />
   const rest = heroFirst ? sections.slice(1) : sections
+  // The template's "shop by category" strip, right under the banner
+  const strip = (style) => <CategoryStrip style={style} categories={categories} products={newest} />
 
   // A homepage from a template pack (storefront/packs) draws everything itself
   const PackHome = packComponent('home', layout.home)
@@ -174,6 +189,7 @@ function Home() {
       <div>
         {loader}
         {top}
+        {strip(layout.categories)}
         <div className="mx-auto max-w-[90rem] lg:grid lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-6 lg:px-6">
           <CategorySidebar categories={categories} />
           <div className="min-w-0">{rest.map(render)}</div>
@@ -188,7 +204,7 @@ function Home() {
       <div>
         {loader}
         {top}
-        <CategoryTiles categories={categories} products={newest} />
+        {strip(layout.categories && layout.categories !== 'none' ? layout.categories : 'tiles')}
         {rest.map(render)}
       </div>
     )
@@ -199,7 +215,9 @@ function Home() {
       {loader}
       {/* No banner slideshow: leave room for the navbar */}
       {!hasHero && <div className="h-20 sm:h-28" />}
-      {sections.map(render)}
+      {heroFirst && render(sections[0])}
+      {strip(layout.categories)}
+      {rest.map(render)}
     </div>
   )
 }
@@ -224,29 +242,5 @@ function CategorySidebar({ categories }) {
         ))}
       </nav>
     </aside>
-  )
-}
-
-// Lookbook: up to 4 categories as big portrait photos (each uses the newest
-// product picture in that category)
-function CategoryTiles({ categories, products }) {
-  const tiles = categories
-    .filter((c) => !c.parent)
-    .map((c) => ({ ...c, image: products.find((p) => p.category === c.name)?.image }))
-    .filter((c) => c.image)
-    .slice(0, 4)
-  if (!tiles.length) return null
-  return (
-    <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
-      <h2 className="font-poppins text-center text-2xl font-bold text-gray-900 sm:text-3xl">Shop by category</h2>
-      <div className={`mt-8 grid grid-cols-2 gap-3 sm:gap-6 ${{ 3: 'lg:grid-cols-3', 4: 'lg:grid-cols-4' }[tiles.length] || ''}`}>
-        {tiles.map((c) => (
-          <Link key={c._id || c.name} to={`/category/${c.name}`} className="group relative block aspect-[3/4] overflow-hidden rounded-md bg-gray-100">
-            <img src={c.image} alt={c.label} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
-            <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-4 font-poppins text-lg font-semibold text-white">{c.label}</span>
-          </Link>
-        ))}
-      </div>
-    </section>
   )
 }

@@ -27,7 +27,7 @@ function SpotlightHome({ settings, sections, renderSection, products }) {
             </p>
             {star.description && <p className="mt-4 text-gray-600">{star.description}</p>}
             <ul className="mt-6 space-y-2 text-sm text-gray-700">
-              {['Pay safely with Paystack', 'Fast delivery', 'Message us on WhatsApp any time'].map((line) => (
+              {['Safe, easy payment', 'Fast delivery', 'Message us on WhatsApp any time'].map((line) => (
                 <li key={line} className="flex items-center gap-2">
                   <CheckCircleIcon className="h-5 w-5 text-blue-600" /> {line}
                 </li>

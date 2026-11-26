@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeftIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline'
 import ThemePreview from '../../../components/ThemePreview'
-import { TEMPLATE_LIST, TEMPLATES, isHex } from '../../../utils/themes'
+import { TEMPLATE_LIST, TEMPLATES, LAYOUT_DEFAULTS, isHex } from '../../../utils/themes'
 import { PREVIEW_SETS } from '../../../utils/pictureIcons'
 import { getAccount, errorMessage } from '../../../services/platformService'
 import { getStudioTemplate, createStudioTemplate, updateStudioTemplate, setStudioStatus, deleteStudioTemplate, getStudioOptions, uploadStudioPicture } from '../../../services/studioService'
@@ -199,6 +199,15 @@ function PhotoSlot({ label, url, onChange, disabled }) {
   )
 }
 
+// An older recipe has no "rest of the shop" structure yet: start from the
+// built-in it edits (or the standard one), so the choices shown are what the
+// shop really looks like
+function withStructure(recipe, builtIn) {
+  const base = TEMPLATES[builtIn]?.layout || LAYOUT_DEFAULTS
+  const fill = Object.fromEntries(Object.keys(LAYOUT_DEFAULTS).filter((k) => k !== 'nav' && k !== 'home').map((k) => [k, base[k]]))
+  return { ...recipe, layout: { ...fill, ...(recipe?.layout || {}) } }
+}
+
 function Editor() {
   const { id } = useParams()
   const isNew = !id || id === 'new'
@@ -220,7 +229,7 @@ function Editor() {
     getStudioTemplate(id)
       .then((data) => {
         setSaved(data)
-        setT({ key: data.key, label: data.label, bestFor: data.bestFor, description: data.description, sampleSet: data.sampleSet, recipe: data.recipe, pictures: data.pictures || {}, builtIn: data.builtIn || '', samples: data.samples ? withLabels(data.samples) : null, visibility: data.visibility || 'public', allowedEmails: (data.allowedEmails || []).join(', ') })
+        setT({ key: data.key, label: data.label, bestFor: data.bestFor, description: data.description, sampleSet: data.sampleSet, recipe: withStructure(data.recipe, data.builtIn), pictures: data.pictures || {}, builtIn: data.builtIn || '', samples: data.samples ? withLabels(data.samples) : null, visibility: data.visibility || 'public', allowedEmails: (data.allowedEmails || []).join(', ') })
       })
       .catch((err) => setError(errorMessage(err, 'Could not load this template.')))
   }, [id, isNew])
@@ -409,6 +418,35 @@ function Editor() {
             <label className="flex items-center gap-2 text-sm text-slate-700">
               <input type="checkbox" className="accent-emerald-600" checked={r.layout.search} onChange={(e) => setLayout({ search: e.target.checked })} />
               Big search box above the products (good for shops with lots of products)
+            </label>
+          </Section>
+
+          <Section title="Homepage sections" hint="How the sections under the banner look.">
+            <p className="text-xs font-medium text-slate-700">Product rows</p>
+            <Choice name="Product rows" value={r.layout.rows || 'grid'} options={PART_LABELS.rows} onChange={(v) => setLayout({ rows: v })} />
+            <p className="text-xs font-medium text-slate-700">Shop by category (under the banner)</p>
+            <Choice name="Shop by category" value={r.layout.categories || 'none'} options={PART_LABELS.categories} onChange={(v) => setLayout({ categories: v })} columns="sm:grid-cols-3" />
+            <p className="text-xs font-medium text-slate-700">Customer reviews</p>
+            <Choice name="Customer reviews" value={r.layout.quotes || 'cards'} options={PART_LABELS.quotes} onChange={(v) => setLayout({ quotes: v })} columns="sm:grid-cols-3" />
+          </Section>
+
+          <Section title="Product page" hint="The page a customer sees after tapping a product.">
+            <Choice name="Product page" value={r.layout.product || 'classic'} options={PART_LABELS.product} onChange={(v) => setLayout({ product: v })} />
+          </Section>
+
+          <Section title="Shop & category pages" hint="The pages that list all products, or one category.">
+            <Choice name="Shop pages" value={r.layout.listing || 'standard'} options={PART_LABELS.listing} onChange={(v) => setLayout({ listing: v })} />
+          </Section>
+
+          <Section title="Spacing & feel">
+            <Choice name="Spacing" value={r.layout.density || 'normal'} options={PART_LABELS.density} onChange={(v) => setLayout({ density: v })} columns="sm:grid-cols-3" />
+            <label className="flex items-center gap-2 text-sm text-slate-700">
+              <input type="checkbox" className="accent-emerald-600" checked={r.layout.bands === true} onChange={(e) => setLayout({ bands: e.target.checked })} />
+              Coloured bands: every other homepage section on a soft tint of the accent colour
+            </label>
+            <label className="flex items-center gap-2 text-sm text-slate-700">
+              <input type="checkbox" className="accent-emerald-600" checked={r.layout.dividers === true} onChange={(e) => setLayout({ dividers: e.target.checked })} />
+              Thin lines between homepage sections
             </label>
           </Section>
 

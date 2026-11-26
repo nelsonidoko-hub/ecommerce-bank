@@ -33,7 +33,7 @@ function ThemePreview({ theme, compact = false }) {
   const photoStyle = (url) => ({ backgroundImage: `url("${url}")`, backgroundSize: 'cover', backgroundPosition: 'center' })
   const iconSize = compact ? 'text-[14px]' : 'text-3xl'
   // Dense templates show four across in the preview, the rest three
-  const shown = layout.columns >= 5 ? products : products.slice(0, 3)
+  const shown = layout.columns >= 5 || layout.rows === 'slider' ? products : products.slice(0, 3)
   const gridCols = layout.columns >= 5 ? 'grid-cols-4' : 'grid-cols-3'
   const btn = compact ? 'px-1.5 py-0.5' : 'px-3 py-1'
 
@@ -171,6 +171,26 @@ function ThemePreview({ theme, compact = false }) {
         </div>
       )}
 
+      {/* "Shop by category" strip, in the template's style */}
+      {home !== 'lookbook' && layout.categories && layout.categories !== 'none' && (
+        <div className={`flex gap-1 overflow-hidden ${compact ? 'px-2 pt-2' : 'px-4 pt-4'} ${layout.categories === 'banners' ? 'grid grid-cols-2' : ''}`}>
+          {set.menu.slice(0, layout.categories === 'banners' ? 2 : 4).map((label, i) =>
+            layout.categories === 'chips' ? (
+              <span key={label} className={`shrink-0 rounded-full border border-gray-300 ${compact ? 'px-1 text-[7px]' : 'px-2 py-0.5'}`}>{label}</span>
+            ) : layout.categories === 'circles' ? (
+              <div key={label} className="shrink-0 text-center">
+                <div className={`mx-auto rounded-full ${compact ? 'h-5 w-5' : 'h-10 w-10'}`} style={products[i]?.photo ? photoStyle(products[i].photo) : pictureStyle} />
+                <span className={compact ? 'text-[6px]' : 'text-[10px]'}>{label}</span>
+              </div>
+            ) : (
+              <div key={label} className={`relative flex flex-1 items-end rounded-md ${layout.categories === 'banners' ? (compact ? 'h-6' : 'h-14') : compact ? 'h-8' : 'h-20'}`} style={products[i]?.photo ? photoStyle(products[i].photo) : pictureStyle}>
+                <span className={`w-full bg-black/40 font-semibold text-white ${compact ? 'px-0.5 text-[6px]' : 'px-1.5 text-[10px]'}`}>{label}</span>
+              </div>
+            )
+          )}
+        </div>
+      )}
+
       {/* Products: menu rows or a grid of cards, with a category sidebar in a
           sidebar catalog, or one big product in a single-product homepage */}
       {home === 'spotlight' ? (
@@ -233,7 +253,35 @@ function ThemePreview({ theme, compact = false }) {
               <span className={`rounded-md bg-blue-600 text-white ${btn}`}>Search</span>
             </div>
           )}
-          <div className={`grid ${gridCols} ${layout.card === 'compact' ? 'gap-1' : 'gap-2'}`}>
+          {layout.rows === 'shelf' ? (
+            <div className="grid grid-cols-2 gap-1">
+              {products.slice(0, 4).map((product) => (
+                <div key={product.name} className="flex items-center gap-1 rounded-md border border-gray-200 p-1">
+                  <div className={`flex shrink-0 items-center justify-center rounded ${compact ? 'h-4 w-4 text-[8px]' : 'h-9 w-9 text-lg'}`} style={product.photo ? photoStyle(product.photo) : pictureStyle}>
+                    {!product.photo && product.icon}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="truncate">{product.name}</p>
+                    <p className="font-bold">{product.price}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : layout.rows === 'spotlight' ? (
+            <div className="grid grid-cols-2 gap-2">
+              <div className={`flex items-end rounded-md ${compact ? 'h-16' : 'h-36'}`} style={products[0]?.photo ? photoStyle(products[0].photo) : pictureStyle}>
+                <span className={`w-full bg-black/40 font-semibold text-white ${compact ? 'px-0.5 text-[6px]' : 'px-2 py-1'}`}>{products[0]?.name}</span>
+              </div>
+              <div className="grid grid-cols-2 gap-1">
+                {products.slice(1, 5).map((product) => (
+                  <div key={product.name} className={`flex items-center justify-center rounded-md ${iconSize}`} style={product.photo ? photoStyle(product.photo) : pictureStyle}>
+                    {!product.photo && product.icon}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+          <div className={`${layout.rows === 'slider' ? 'flex overflow-hidden [&>*]:w-[38%] [&>*]:shrink-0' : `grid ${gridCols}`} ${layout.card === 'compact' ? 'gap-1' : 'gap-2'}`}>
             {shown.map((product) => (
               <div key={product.name} className={cardClass}>
                 <div className={`${imageClass} flex items-center justify-center ${iconSize}`} style={product.photo ? photoStyle(product.photo) : pictureStyle}>
@@ -256,6 +304,7 @@ function ThemePreview({ theme, compact = false }) {
               </div>
             ))}
           </div>
+          )}
         </div>
       )}
           </div>

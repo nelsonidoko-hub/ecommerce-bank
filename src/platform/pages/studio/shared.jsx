@@ -41,6 +41,42 @@ export const PART_LABELS = {
   nav: Object.fromEntries(Object.entries(PARTS.nav).map(([id, p]) => [id, [p.label, p.help]])),
   home: Object.fromEntries(Object.entries(PARTS.home).map(([id, p]) => [id, [p.label, p.help]])),
   grid: { grid: ['Grid', 'Products side by side'], list: ['List', 'One product per row'] },
+  // Round 2: the rest of the shop
+  rows: {
+    grid: ['Grid', 'Products side by side'],
+    slider: ['Sliding row', 'Swipe sideways through the products'],
+    spotlight: ['Spotlight', 'First product big, four small beside it (beauty, fashion)'],
+    shelf: ['Shelf', 'Small photo beside name and price, many per screen (supermarkets)'],
+  },
+  categories: {
+    none: ['None', 'No category strip'],
+    tiles: ['Big photos', 'Large portrait photo per category (fashion)'],
+    circles: ['Circles', 'Round photos you swipe through (big shops, kids)'],
+    chips: ['Buttons', 'A row of small category buttons (food, simple shops)'],
+    banners: ['Wide banners', 'Two wide pictures per row with "Shop now" (electronics)'],
+  },
+  quotes: {
+    cards: ['Cards', 'Three reviews in white boxes'],
+    single: ['One big quote', 'One review at a time, large, with dots'],
+    plain: ['Magazine', 'Italic quotes with a thin line beside them'],
+  },
+  product: {
+    classic: ['Classic', 'Photo left, details and buttons right'],
+    wide: ['Wide photos', 'Photos across the top, details underneath (streetwear)'],
+    sticky: ['Tall gallery', 'All photos large down the page, the buy box stays in view (fashion, beauty)'],
+    simple: ['Simple', 'One column in the middle (food, small shops)'],
+  },
+  listing: {
+    standard: ['Standard', 'Filters in a row above the products'],
+    sidebar: ['Sidebar filters', 'Categories, prices and stock in a column on the left (big shops)'],
+    chips: ['Filter buttons', 'Tap-to-filter buttons that swipe on phones (food, phones)'],
+    large: ['Big photos', 'Two large products per row, quiet filters (fashion)'],
+  },
+  density: {
+    compact: ['Compact', 'Sections close together, more on screen'],
+    normal: ['Normal', 'Balanced'],
+    airy: ['Airy', 'Lots of space, calm and premium'],
+  },
   footer: { dark: ['Dark', 'Dark footer'], light: ['Light', 'Light footer'] },
   radius: { square: 'Square', soft: 'Slightly rounded', round: 'Very rounded' },
   headingFont: { poppins: 'Poppins (modern)', epilogue: 'Epilogue (clean)', anton: 'Anton (tall and bold)', playfair: 'Playfair (elegant serif)' },

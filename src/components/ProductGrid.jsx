@@ -30,7 +30,7 @@ function ProductGrid({ products = [] }) {
 
   return (
     <div
-      className={`grid grid-cols-1 min-[321px]:grid-cols-2 ${
+      className={`sf-grid grid grid-cols-1 min-[321px]:grid-cols-2 ${
         // dense cards sit closer together so more fit on screen
         layout.card === 'compact' ? 'gap-2 md:gap-3' : 'gap-3 md:gap-6'
       } ${

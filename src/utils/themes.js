@@ -204,7 +204,50 @@ export const TEMPLATES = {
 
 // Every template's structure: the 8 originals use the standard menu and
 // homepage (existing shops look exactly as before)
-for (const t of Object.values(TEMPLATES)) t.layout = { nav: 'standard', home: 'sections', ...t.layout }
+// Round 2 of structure: how the rest of the shop is built, per template
+//   rows:       product rows on the homepage   grid | slider | spotlight | shelf
+//   categories: a "shop by category" strip      none | tiles | circles | chips | banners
+//   quotes:     customer reviews section        cards | single | plain
+//   product:    the product page                classic | wide | sticky | simple
+//   listing:    shop and category pages         standard | sidebar | chips | large
+//   density:    space between sections          compact | normal | airy
+//   bands:      tinted background behind every other section
+//   dividers:   a thin line between sections
+export const LAYOUT_DEFAULTS = {
+  nav: 'standard',
+  home: 'sections',
+  rows: 'grid',
+  categories: 'none',
+  quotes: 'cards',
+  product: 'classic',
+  listing: 'standard',
+  density: 'normal',
+  bands: false,
+  dividers: false,
+}
+export const LAYOUT_CHOICES = {
+  rows: ['grid', 'slider', 'spotlight', 'shelf'],
+  categories: ['none', 'tiles', 'circles', 'chips', 'banners'],
+  quotes: ['cards', 'single', 'plain'],
+  product: ['classic', 'wide', 'sticky', 'simple'],
+  listing: ['standard', 'sidebar', 'chips', 'large'],
+  density: ['compact', 'normal', 'airy'],
+}
+
+// Each built-in template's structure for the rest of the shop
+const STRUCTURE = {
+  classic: {},
+  minimal: { product: 'sticky', listing: 'large', quotes: 'plain', density: 'airy' },
+  bold: { rows: 'slider', product: 'wide', listing: 'chips', quotes: 'single', dividers: true },
+  fresh: { categories: 'chips', product: 'simple', listing: 'chips', bands: true },
+  catalog: { rows: 'shelf', categories: 'circles', listing: 'sidebar', density: 'compact' },
+  glow: { rows: 'spotlight', categories: 'circles', product: 'sticky', quotes: 'single', density: 'airy' },
+  tech: { rows: 'slider', categories: 'banners', listing: 'sidebar', dividers: true },
+  playful: { rows: 'slider', categories: 'circles', product: 'simple', bands: true },
+  gadget: { listing: 'sidebar', product: 'sticky', density: 'compact' },
+  atelier: { rows: 'spotlight', product: 'sticky', listing: 'large', quotes: 'plain', density: 'airy' },
+}
+for (const t of Object.values(TEMPLATES)) t.layout = { ...LAYOUT_DEFAULTS, ...STRUCTURE[t.id], ...t.layout }
 
 // Structure parts. Ids of custom parts from template packs (storefront/packs)
 // are accepted too: anything unknown falls back to the standard part.
@@ -270,6 +313,7 @@ export function recipeTemplate(id, recipe, meta = {}) {
   const pick = (value, ok, fallback) => (ok(value) ? value : fallback)
   const colour = (value) => (value === '' || isHex(value) ? value : '')
   const l = recipe.layout && typeof recipe.layout === 'object' ? recipe.layout : {}
+  const base = (TEMPLATES[id] || c).layout
   return {
     id,
     label: meta.label || id,
@@ -296,6 +340,12 @@ export function recipeTemplate(id, recipe, meta = {}) {
       nav: pick(l.nav, isPartId, 'standard'),
       home: pick(l.home, isPartId, 'sections'),
       search: l.search === true,
+      // Missing (an older recipe): the built-in's own structure, or the standard one
+      ...Object.fromEntries(
+        Object.entries(LAYOUT_CHOICES).map(([k, allowed]) => [k, pick(l[k], (v) => allowed.includes(v), base[k])])
+      ),
+      bands: typeof l.bands === 'boolean' ? l.bands : base.bands,
+      dividers: typeof l.dividers === 'boolean' ? l.dividers : base.dividers,
     },
   }
 }
@@ -391,6 +441,10 @@ export function themeClasses(theme) {
     theme.uppercase && 'theme-upper',
     theme.headingWeight === 400 && 'theme-weight-400',
     theme.headingWeight === 500 && 'theme-weight-500',
+    theme.layout?.density === 'compact' && 'density-compact',
+    theme.layout?.density === 'airy' && 'density-airy',
+    theme.layout?.bands && 'sf-bands',
+    theme.layout?.dividers && 'sf-dividers',
   ]
     .filter(Boolean)
     .join(' ')

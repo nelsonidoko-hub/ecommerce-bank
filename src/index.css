@@ -36,3 +36,47 @@
 .theme-weight-500 :is(h1, h2, h3, h4) {
   font-weight: 500;
 }
+/* Spacing & feel (utils/themes.js: layout.density, bands, dividers).
+   Home wraps every section in .sf-block (data-type = the section type).
+   These rules are outside Tailwind's layers, so they win over a section's
+   own mb-16 / mt-12. A shop on "normal" with no bands or lines gets none of
+   them and looks exactly as before. */
+.density-compact { --sf-gap: 2rem; }
+.density-airy { --sf-gap: 6.5rem; }
+.sf-bands, .sf-dividers { --sf-gap: 4rem; }
+.density-compact.sf-bands, .density-compact.sf-dividers { --sf-gap: 2rem; }
+.density-airy.sf-bands, .density-airy.sf-dividers { --sf-gap: 6.5rem; }
+
+:is(.density-compact, .density-airy) .sf-block:not([data-type='hero']) > * {
+  margin-top: 0;
+  margin-bottom: var(--sf-gap);
+}
+
+/* Bands: every other section sits on a soft tint of the shop colour */
+.sf-bands .sf-block:not([data-type='hero']) {
+  padding-block: calc(var(--sf-gap) / 2);
+}
+.sf-bands .sf-block:not([data-type='hero']) > * {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+.sf-bands .sf-block:not([data-type='hero']):nth-of-type(even) {
+  background-color: var(--color-blue-50);
+}
+
+/* Dividers: a thin line between sections */
+.sf-dividers .sf-block:not([data-type='hero']) + .sf-block {
+  border-top: 1px solid var(--color-gray-200);
+  padding-top: calc(var(--sf-gap) / 2);
+}
+.sf-dividers:not(.sf-bands) .sf-block:not([data-type='hero']) > * {
+  margin-top: 0;
+  margin-bottom: calc(var(--sf-gap) / 2);
+}
+
+/* Compact shops: product grids sit a little closer too */
+.density-compact .sf-grid { gap: 0.5rem; }
+@media (min-width: 768px) { .density-compact .sf-grid { gap: 0.75rem; } }
+.density-airy .sf-grid { row-gap: 3rem; }
+/* In banded shops the band is the background, not the section's own grey */
+.sf-bands .sf-block > .bg-gray-50 { background-color: transparent; }
