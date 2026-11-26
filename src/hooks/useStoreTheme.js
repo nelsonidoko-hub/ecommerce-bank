@@ -9,6 +9,6 @@ export function useStoreTheme() {
 
   return useMemo(() => {
     const theme = resolveTheme(settings.theme)
-    return { theme, layout: theme.layout, className: themeClasses(theme), style: themeStyle(theme) }
+    return { theme, layout: theme.layout, words: theme.words, className: themeClasses(theme), style: themeStyle(theme) }
   }, [settings.theme])
 }

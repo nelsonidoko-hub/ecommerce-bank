@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useContext, createContext } from 'react'
 import { PlusIcon, TrashIcon, ArrowUpTrayIcon } from '@heroicons/react/24/outline'
 import { SECTION_TYPES } from '../../utils/sections'
 import { uploadImage } from '../../services/uploadService'
@@ -6,7 +6,12 @@ import { storedUser } from '../../utils/storeContext'
 
 const inputClass = 'w-full rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600'
 
+// The Template Studio uploads to the platform's template photos instead of a
+// shop's own pictures; it wraps the editor in this with its own upload.
+export const SectionUploadContext = createContext(null)
+
 function ImageField({ value, onChange }) {
+  const custom = useContext(SectionUploadContext)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   async function upload(e) {
@@ -17,7 +22,7 @@ function ImageField({ value, onChange }) {
     setBusy(true)
     setError('')
     try {
-      onChange(await uploadImage(file, storedUser()?.token))
+      onChange(custom ? await custom.upload(file) : await uploadImage(file, storedUser()?.token))
     } catch {
       setError('Upload failed. Please try again.')
     } finally {
@@ -30,7 +35,7 @@ function ImageField({ value, onChange }) {
         {value ? (
           <img src={value} alt="" className="h-14 w-20 rounded-md border object-cover" />
         ) : (
-          <div className="flex h-14 w-20 items-center justify-center rounded-md border border-dashed text-[10px] text-gray-400">No picture</div>
+          <div className="flex h-14 w-20 items-center justify-center rounded-md border border-dashed px-1 text-center text-[10px] text-gray-400">{custom?.emptyText || 'No picture'}</div>
         )}
         <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50">
           <ArrowUpTrayIcon className="h-4 w-4" />

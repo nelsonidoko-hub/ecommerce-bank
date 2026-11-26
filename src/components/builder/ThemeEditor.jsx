@@ -15,11 +15,11 @@ import {
   brandReadability,
 } from '../../utils/themes'
 
-export const EMPTY_THEME = { template: 'classic', brandColor: '', headingFont: '', bodyFont: '', radius: '' }
+export const EMPTY_THEME = { template: 'classic', brandColor: '', headingFont: '', bodyFont: '', radius: '', addLabel: '', buyLabel: '' }
 const inputClass = 'w-full rounded-md border border-gray-300 px-3 py-2 text-sm'
 
 // Template, colour, fonts and corners. Controlled: value + onChange(theme).
-function ThemeEditor({ value, onChange, liveTemplate }) {
+function ThemeEditor({ value, onChange, liveTemplate, onUseHomepage, homepageBusy = false }) {
   const theme = { ...EMPTY_THEME, ...value }
   const [hex, setHex] = useState(theme.brandColor)
   useEffect(() => setHex(theme.brandColor), [theme.brandColor])
@@ -51,7 +51,7 @@ function ThemeEditor({ value, onChange, liveTemplate }) {
                 key={t.id}
                 type="button"
                 // a new template starts from its own colours, fonts and corners
-                onClick={() => onChange({ ...EMPTY_THEME, template: t.id, ...(t.studio ? { recipe: t, sampleSet: t.sampleSet } : {}) })}
+                onClick={() => onChange({ ...EMPTY_THEME, addLabel: theme.addLabel, buyLabel: theme.buyLabel, template: t.id, ...(t.studio ? { recipe: t, sampleSet: t.sampleSet } : {}) })}
                 aria-pressed={selected}
                 className={`rounded-lg border-2 p-2 text-left transition ${selected ? 'border-blue-600' : 'border-gray-200 hover:border-gray-400'}`}
               >
@@ -65,6 +65,23 @@ function ThemeEditor({ value, onChange, liveTemplate }) {
             )
           })}
         </div>
+        {onUseHomepage && (
+          <div className="mt-3 rounded-lg border border-blue-100 bg-blue-50 p-3 text-xs text-blue-900">
+            <p>
+              Each template comes with its own homepage: product rows, banners, reviews and words. Want{' '}
+              <span className="font-semibold">{templates.find((t) => t.id === theme.template)?.label || 'this template'}</span>'s homepage too?
+              It replaces your homepage sections in this draft. Nothing changes for customers until you publish.
+            </p>
+            <button
+              type="button"
+              disabled={homepageBusy}
+              onClick={() => onUseHomepage(theme.template)}
+              className="mt-2 rounded-md bg-blue-600 px-3 py-1.5 font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
+            >
+              {homepageBusy ? 'Loading…' : "Use this template's homepage"}
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="space-y-4">
@@ -111,6 +128,19 @@ function ThemeEditor({ value, onChange, liveTemplate }) {
             <option value="">Template default ({RADIUS_LABELS[base.radius]})</option>
             {Object.entries(RADIUS_LABELS).map(([v, label]) => <option key={v} value={v}>{label}</option>)}
           </select>
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <h3 className="text-sm font-semibold text-gray-900">Button words</h3>
+        <p className="text-xs text-gray-500">Leave empty to use the template's words. A food shop might say "Add to order" and "Order now".</p>
+        <div>
+          <label htmlFor="addLabel" className="mb-1 block text-xs text-gray-500">Add button</label>
+          <input id="addLabel" className={inputClass} maxLength={24} value={theme.addLabel} placeholder={base.words?.add} onChange={(e) => set('addLabel', e.target.value)} />
+        </div>
+        <div>
+          <label htmlFor="buyLabel" className="mb-1 block text-xs text-gray-500">Buy button (on the product page)</label>
+          <input id="buyLabel" className={inputClass} maxLength={24} value={theme.buyLabel} placeholder={base.words?.buy} onChange={(e) => set('buyLabel', e.target.value)} />
         </div>
       </div>
     </div>

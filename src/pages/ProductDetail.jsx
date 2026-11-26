@@ -17,7 +17,7 @@ function ProductDetail() {
   const { addToCart } = useCart()
   const navigate = useNavigate()
   const { settings } = useSettings()
-  const { layout } = useStoreTheme()
+  const { layout, words } = useStoreTheme()
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -160,7 +160,7 @@ function ProductDetail() {
           disabled={isOutOfStock || !selectedSize}
           className="flex-1 border-2 border-gray-900 text-gray-900 py-3 rounded-md font-semibold hover:bg-gray-100 transition disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
+          {isOutOfStock ? 'Out of Stock' : words?.add || 'Add to Cart'}
         </button>
       </div>
 
@@ -169,7 +169,7 @@ function ProductDetail() {
         disabled={isOutOfStock || !selectedSize}
         className="w-full mt-3 bg-gray-900 text-white py-3 rounded-md font-semibold hover:bg-gray-800 transition disabled:opacity-40 disabled:cursor-not-allowed"
       >
-        Buy It Now
+        {words?.buy || 'Buy It Now'}
       </button>
     </>
   )

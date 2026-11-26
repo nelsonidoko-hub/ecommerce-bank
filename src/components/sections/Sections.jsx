@@ -44,21 +44,23 @@ function ProductCarousel({ products }) {
     const total = el.scrollWidth - el.clientWidth
     if (total > 0) setProgress((el.scrollLeft / total) * 100)
   }
-  const scroll = (dir) => ref.current?.scrollBy({ left: dir * 300, behavior: 'smooth' })
+  const scroll = (dir) => ref.current?.scrollBy({ left: dir * (ref.current.clientWidth * 0.75), behavior: 'smooth' })
 
   return (
     <div className="relative mt-6">
       <button
         type="button"
         onClick={() => scroll(-1)}
-        className="absolute left-2 top-40 z-10 hidden rounded-full bg-white/80 p-2 text-gray-800 shadow-md transition-all hover:bg-white md:block"
+        className="absolute left-2 top-1/3 z-10 hidden rounded-full bg-white/80 p-2 text-gray-800 shadow-md transition-all hover:bg-white md:block"
         aria-label="Scroll left"
       >
         <ChevronLeftIcon className="h-8 w-8" />
       </button>
-      <div ref={ref} onScroll={onScroll} className="scrollbar-none flex snap-x snap-mandatory gap-6 overflow-x-auto scroll-smooth pb-2">
+      <div ref={ref} onScroll={onScroll} className="scrollbar-none flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-smooth pb-2 font-epilogue md:gap-6">
         {products.map((product) => (
-          <div key={product._id} className="min-w-[250px] flex-shrink-0 snap-start md:min-w-[300px]">
+          // Two per screen on phones, three on tablets, four on laptops, however
+          // wide the card's own picture is
+          <div key={product._id} className="w-[46%] min-w-0 flex-shrink-0 snap-start sm:w-[31%] lg:w-[23%]">
             <ProductCard product={product} />
           </div>
         ))}
@@ -66,7 +68,7 @@ function ProductCarousel({ products }) {
       <button
         type="button"
         onClick={() => scroll(1)}
-        className="absolute right-2 top-40 z-10 hidden rounded-full bg-white/80 p-2 text-gray-800 shadow-md transition-all hover:bg-white md:block"
+        className="absolute right-2 top-1/3 z-10 hidden rounded-full bg-white/80 p-2 text-gray-800 shadow-md transition-all hover:bg-white md:block"
         aria-label="Scroll right"
       >
         <ChevronRightIcon className="h-8 w-8" />

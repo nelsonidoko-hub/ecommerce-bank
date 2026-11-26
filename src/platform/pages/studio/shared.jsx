@@ -97,5 +97,6 @@ export function recipeFromBuiltIn(id) {
     uppercase: t.uppercase,
     headingWeight: t.headingWeight,
     layout: { ...t.layout },
+    words: { ...t.words },
   }
 }

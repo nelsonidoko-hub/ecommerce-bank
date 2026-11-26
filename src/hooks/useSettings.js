@@ -1,3 +1,4 @@
+import { PLATFORM_DOMAIN } from '../utils/storeContext'
 import { useState, useEffect } from 'react'
 import { getSettings } from '../services/settingsService'
 import { readStoredTheme, storeTheme } from '../utils/themes'
@@ -71,10 +72,24 @@ const listeners = new Set()
 export const isPreview =
   typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('preview') === '1'
 
+// The Template Studio shows a demo shop in a frame with ?studio=1 and pushes
+// the template being made into it: look, homepage and banner words. Only the
+// platform's own pages may do this (same site, or the platform domain), and it
+// only changes what that frame shows.
+export const isStudioPreview =
+  typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('studio') === '1'
+
+export function studioOriginAllowed(origin) {
+  if (typeof window === 'undefined') return false
+  if (origin === window.location.origin) return true
+  if (!PLATFORM_DOMAIN) return false
+  return origin === `https://${PLATFORM_DOMAIN}` || origin === `https://www.${PLATFORM_DOMAIN}`
+}
+
 // Call after saving in the admin so this tab shows the new values immediately
 export function setCachedSettings(next) {
   cached = next
-  if (!isPreview) storeTheme(next.theme)
+  if (!isPreview && !isStudioPreview) storeTheme(next.theme)
   listeners.forEach((fn) => fn(next))
 }
 
@@ -94,6 +109,26 @@ if (isPreview && typeof window !== 'undefined') {
   })
   // Tell the builder we're ready for its latest changes
   if (window.parent !== window) window.parent.postMessage({ type: 'builder:ready' }, window.location.origin)
+}
+
+if (isStudioPreview && typeof window !== 'undefined') {
+  window.addEventListener('message', (event) => {
+    if (!studioOriginAllowed(event.origin)) return
+    const msg = event.data
+    if (msg?.type !== 'studio:design') return
+    const base = cached || defaultSettings
+    setCachedSettings({
+      ...base,
+      // the template replaces the demo's own look completely
+      theme: msg.theme && typeof msg.theme === 'object' ? msg.theme : base.theme,
+      homeSections: Array.isArray(msg.homeSections) ? msg.homeSections : base.homeSections,
+      previewHero: msg.hero && typeof msg.hero === 'object' ? msg.hero : null,
+      isPreview: true,
+    })
+  })
+  // The Studio may be on another address (the platform domain): it only
+  // learns that the frame is ready, nothing else
+  if (window.parent !== window) window.parent.postMessage({ type: 'studio:ready' }, '*')
 }
 
 export function useSettings() {
@@ -123,11 +158,11 @@ export function useSettings() {
           // A design pushed by the builder before this arrived keeps its
           // theme and sections; everything else (name, contact...) is real
           if (cached?.isPreview) {
-            cached = { ...data, theme: cached.theme, homeSections: cached.homeSections, isPreview: true }
+            cached = { ...data, theme: cached.theme, homeSections: cached.homeSections, previewHero: cached.previewHero || null, isPreview: true }
             return cached
           }
           cached = data
-          if (!isPreview) storeTheme(data.theme)
+          if (!isPreview && !isStudioPreview) storeTheme(data.theme)
           return data
         })
         .catch((err) => {

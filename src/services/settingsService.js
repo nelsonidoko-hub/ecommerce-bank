@@ -20,3 +20,5 @@ export const getDraft = async () => (await axios.get(`${API_URL}/draft`)).data
 export const saveDraft = async (design) => (await axios.put(`${API_URL}/draft`, design)).data
 export const publishDraft = async () => (await axios.post(`${API_URL}/draft/publish`)).data
 export const discardDraft = async () => (await axios.delete(`${API_URL}/draft`)).data
+// A template's own homepage, ready for this shop (the builder puts it in the draft)
+export const getTemplateHomepage = async (template) => (await axios.get(`${API_URL}/template-homepage/${encodeURIComponent(template)}`)).data

@@ -249,6 +249,26 @@ const STRUCTURE = {
 }
 for (const t of Object.values(TEMPLATES)) t.layout = { ...LAYOUT_DEFAULTS, ...STRUCTURE[t.id], ...t.layout }
 
+// The words on the shop's buttons. A template sets its own (a food shop says
+// "Add to order" and "Order now"); a merchant can change them in the builder.
+export const DEFAULT_WORDS = { add: 'Add to Cart', buy: 'Buy It Now' }
+const WORDS = {
+  classic: {},
+  minimal: { add: 'Add to bag', buy: 'Buy now' },
+  bold: { add: 'Add to bag', buy: 'Cop now' },
+  fresh: { add: 'Add to order', buy: 'Order now' },
+  catalog: { add: 'Add to cart', buy: 'Buy now' },
+  glow: { add: 'Add to bag', buy: 'Buy now' },
+  tech: { add: 'Add to cart', buy: 'Buy now' },
+  playful: { add: 'Add to basket', buy: 'Buy now' },
+  gadget: { add: 'Add to cart', buy: 'Buy now' },
+  atelier: { add: 'Add to bag', buy: 'Buy now' },
+}
+for (const t of Object.values(TEMPLATES)) t.words = { ...DEFAULT_WORDS, ...WORDS[t.id] }
+// A button word: plain text, short (the server checks the same)
+export const cleanWord = (value) =>
+  typeof value === 'string' ? value.replace(/[<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 24) : ''
+
 // Structure parts. Ids of custom parts from template packs (storefront/packs)
 // are accepted too: anything unknown falls back to the standard part.
 export const HERO_STYLES = ['full', 'compact', 'slim', 'split', 'none']
@@ -347,6 +367,10 @@ export function recipeTemplate(id, recipe, meta = {}) {
       bands: typeof l.bands === 'boolean' ? l.bands : base.bands,
       dividers: typeof l.dividers === 'boolean' ? l.dividers : base.dividers,
     },
+    words: {
+      add: cleanWord(recipe.words?.add) || (TEMPLATES[id] || c).words.add,
+      buy: cleanWord(recipe.words?.buy) || (TEMPLATES[id] || c).words.buy,
+    },
   }
 }
 
@@ -369,6 +393,11 @@ export function resolveTheme(saved) {
     uppercase: base.uppercase,
     headingWeight: base.headingWeight,
     layout: base.layout,
+    // The merchant's own button words win over the template's
+    words: {
+      add: cleanWord(s.addLabel) || base.words?.add || DEFAULT_WORDS.add,
+      buy: cleanWord(s.buyLabel) || base.words?.buy || DEFAULT_WORDS.buy,
+    },
   }
 }
 

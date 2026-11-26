@@ -11,7 +11,7 @@ function ProductCard({ product }) {
   )
   const [isHovered, setIsHovered] = useState(false)
   const { addToCart } = useCart()
-  const { layout } = useStoreTheme()
+  const { layout, words } = useStoreTheme()
   const inList = useContext(ListLayoutContext)
 
   const isOutOfStock = product.sizes.every((s) => s.stock === 0)
@@ -72,7 +72,7 @@ function ProductCard({ product }) {
 
   // Small corner label used by the newer card styles
   const badge = isOutOfStock ? 'Sold out' : onSale ? 'Sale' : ''
-  const addLabel = isOutOfStock ? 'Sold out' : 'Add to cart'
+  const addLabel = isOutOfStock ? 'Sold out' : words?.add || 'Add to cart'
 
   /* ---------- compact (Catalog): dense, square photo, price first ---------- */
   if (variant === 'compact') {
@@ -125,7 +125,7 @@ function ProductCard({ product }) {
           disabled={isOutOfStock || !selectedSize}
           className="mt-3 rounded-full border border-blue-600 px-5 py-1.5 text-xs font-medium text-blue-600 transition-colors hover:bg-blue-600 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
         >
-          {isOutOfStock ? 'Sold out' : 'Add to bag'}
+          {addLabel}
         </button>
       </Link>
     )

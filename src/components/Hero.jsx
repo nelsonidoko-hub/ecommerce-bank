@@ -72,7 +72,14 @@ function Hero({ onReady }) {
   }, [])
 
   const multiple = slides.length > 1
-  const slide = slides[currentSlide] || slides[0]
+  const shown = slides[currentSlide] || slides[0]
+  // The Template Studio's preview: the template's banner words on the first slide
+  const words = settings.previewHero
+  const named = (v) => (typeof v === 'string' ? v.replaceAll('{shop}', settings.storeName || '') : v)
+  const slide =
+    words && shown && shown === slides[0]
+      ? { ...shown, heading: named(words.heading) || shown.heading, text: named(words.text) || shown.text, buttonLabel: words.buttonLabel || shown.buttonLabel, buttonLink: words.buttonLink || shown.buttonLink || '/shop' }
+      : shown
 
   function goNext() {
     setCurrentSlide((prev) => (prev + 1) % slides.length)

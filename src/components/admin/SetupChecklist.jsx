@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { CheckCircleIcon, RocketLaunchIcon } from '@heroicons/react/24/solid'
-import { getSetup, publishStore, removeSampleProducts } from '../../services/storeService'
+import { getSetup, publishStore, removeSampleProducts, keepSampleProducts } from '../../services/storeService'
 import { loadStoreStatus } from '../../hooks/useStoreStatus'
 
 const day = (d) => new Date(d).toLocaleDateString('en-NG', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -31,6 +31,22 @@ function SetupChecklist() {
       setMessage(`Removed ${result.removed.products} sample products.`)
     } catch (err) {
       setError(err?.response?.data?.message || 'Could not remove the samples.')
+    } finally {
+      setBusy('')
+    }
+  }
+
+  // The template's products, pictures and banner become the shop's own
+  async function keepSamples() {
+    setBusy('keep')
+    setError('')
+    try {
+      const result = await keepSampleProducts()
+      setSetup(result.setup)
+      setConfirmRemove(false)
+      setMessage(`Kept ${result.kept.products} products as your own. Check their prices and stock in Products.`)
+    } catch (err) {
+      setError(err?.response?.data?.message || 'Could not keep the samples.')
     } finally {
       setBusy('')
     }
@@ -126,9 +142,14 @@ function SetupChecklist() {
                   </button>
                 </span>
               ) : (
-                <button type="button" onClick={() => setConfirmRemove(true)} className="ml-auto text-xs font-semibold text-blue-600 hover:underline">
-                  Remove
-                </button>
+                <span className="ml-auto flex shrink-0 items-center gap-3">
+                  <button type="button" onClick={keepSamples} disabled={busy === 'keep'} title="Keep the template's products and pictures as your own" className="rounded-md bg-blue-600 px-3 py-1 text-xs font-semibold text-white disabled:opacity-50">
+                    {busy === 'keep' ? 'Keeping…' : 'Keep them'}
+                  </button>
+                  <button type="button" onClick={() => setConfirmRemove(true)} className="text-xs font-semibold text-gray-600 hover:underline">
+                    Remove
+                  </button>
+                </span>
               )
             ) : (
               !step.done && step.link && (

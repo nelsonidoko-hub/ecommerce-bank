@@ -8,3 +8,4 @@ const API = `${API_BASE}/api/store`
 export const getSetup = async () => (await axios.get(`${API}/setup`)).data
 export const publishStore = async () => (await axios.post(`${API}/publish`)).data
 export const removeSampleProducts = async () => (await axios.delete(`${API}/samples`)).data
+export const keepSampleProducts = async () => (await axios.post(`${API}/samples/keep`)).data
