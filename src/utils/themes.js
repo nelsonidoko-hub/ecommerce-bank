@@ -200,6 +200,37 @@ export const TEMPLATES = {
     headingWeight: 500,
     layout: { card: 'borderless', grid: 'grid', columns: 3, footer: 'light', hero: 'split', search: false, nav: 'centered', home: 'lookbook' },
   },
+  // Adapted from MIT-licensed designs (storefront/packs/furnish and /bloom)
+  furnish: {
+    id: 'furnish',
+    label: 'Furnish',
+    bestFor: 'Furniture and home decor',
+    description: 'A calm showroom: a slider of your best pieces with big thin headings and sale tags in italics, a "favourite collection" slider, and a customer review over a large photo. Square corners, warm greys, a burnt-orange accent.',
+    brand: '#a85d1f',
+    ink: '#211f1c',
+    surface: '',
+    headingFont: 'poppins',
+    bodyFont: 'poppins',
+    radius: 'square',
+    uppercase: false,
+    headingWeight: 400,
+    layout: { card: 'borderless', grid: 'grid', columns: 3, footer: 'dark', hero: 'none', search: false, nav: 'standard', home: 'furnish' },
+  },
+  bloom: {
+    id: 'bloom',
+    label: 'Bloom',
+    bestFor: 'Sneakers and one-category shops',
+    description: 'Clean and bright. No banner: a big centred headline, a search bar in the menu, then rounded product cards with a full-width amber button.',
+    brand: '#b45309',
+    ink: '#262626',
+    surface: '',
+    headingFont: 'poppins',
+    bodyFont: 'epilogue',
+    radius: 'round',
+    uppercase: false,
+    headingWeight: 600,
+    layout: { card: 'spec', grid: 'grid', columns: 3, footer: 'light', hero: 'none', search: false, nav: 'search', home: 'bloom' },
+  },
 }
 
 // Every template's structure: the 8 originals use the standard menu and
@@ -246,6 +277,8 @@ const STRUCTURE = {
   playful: { rows: 'slider', categories: 'circles', product: 'simple', bands: true },
   gadget: { listing: 'sidebar', product: 'sticky', density: 'compact' },
   atelier: { rows: 'spotlight', product: 'sticky', listing: 'large', quotes: 'plain', density: 'airy' },
+  furnish: { rows: 'slider', product: 'classic', listing: 'large', quotes: 'single', density: 'airy' },
+  bloom: { categories: 'chips', listing: 'chips', product: 'classic' },
 }
 for (const t of Object.values(TEMPLATES)) t.layout = { ...LAYOUT_DEFAULTS, ...STRUCTURE[t.id], ...t.layout }
 
@@ -263,6 +296,8 @@ const WORDS = {
   playful: { add: 'Add to basket', buy: 'Buy now' },
   gadget: { add: 'Add to cart', buy: 'Buy now' },
   atelier: { add: 'Add to bag', buy: 'Buy now' },
+  furnish: { add: 'Add to cart', buy: 'Buy now' },
+  bloom: { add: 'Add to Cart', buy: 'Buy now' },
 }
 for (const t of Object.values(TEMPLATES)) t.words = { ...DEFAULT_WORDS, ...WORDS[t.id] }
 // A button word: plain text, short (the server checks the same)

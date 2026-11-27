@@ -178,7 +178,7 @@ function Home() {
     return (
       <div>
         {loader}
-        <PackHome settings={settings} sections={sections} renderSection={render} products={{ newest, bestSellers }} />
+        <PackHome settings={settings} sections={sections} renderSection={render} products={{ newest, bestSellers }} productsFor={productsFor} />
       </div>
     )
   }

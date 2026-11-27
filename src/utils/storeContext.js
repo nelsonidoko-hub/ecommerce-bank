@@ -32,17 +32,30 @@ function session(get, value) {
   return ''
 }
 
+// A page shown inside another page (the Template Studio's preview, the
+// builder's preview). It shares the tab's memory with the page around it, so
+// it must not change which site the tab remembers: otherwise the Studio,
+// reloaded, would open the demo shop it was previewing.
+function inFrame() {
+  try {
+    return window.self !== window.top
+  } catch {
+    return true
+  }
+}
+
 // 'platform' | 'store:<slug>' | ''  (only meaningful on development hosts)
 function devChoice() {
   if (typeof window === 'undefined') return ''
   const params = new URLSearchParams(window.location.search)
   const store = (params.get('store') || '').toLowerCase()
+  const remember = !inFrame()
   if (SLUG.test(store)) {
-    session(false, `store:${store}`)
+    if (remember) session(false, `store:${store}`)
     return `store:${store}`
   }
   if (params.has('platform')) {
-    session(false, 'platform')
+    if (remember) session(false, 'platform')
     return 'platform'
   }
   const remembered = session(true)

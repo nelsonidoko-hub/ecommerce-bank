@@ -20,6 +20,8 @@ const SAMPLE_SETS = {
   glow: 'Beauty and skincare',
   tech: 'Phones and gadgets',
   playful: 'Babies and kids',
+  furnish: 'Furniture and home decor',
+  bloom: 'Sneakers',
   custom: 'My own products (type them in)',
 }
 // The server keeps category names (e.g. "grains-tubers"); the editor works with labels
@@ -112,9 +114,21 @@ const studioUpload = { upload: async (file) => (await uploadStudioPicture(file))
 
 // Starting point when switching to "My own products": the chosen set's
 // categories and first products (and any photos already added for them)
-function samplesFrom(set, names, pictures) {
+// "My own products" starts as a copy of the whole sample set (names, prices,
+// categories, descriptions, photos), so the designer only adds to it
+export function samplesFrom(set, names, pictures, options) {
+  const full = options?.sampleSetProducts?.[set]
+  if (full?.length) {
+    const labels = (options.sampleCategories?.[set] || []).map((c) => c.label)
+    return {
+      heading: (PREVIEW_SETS[set] || PREVIEW_SETS.classic).banner,
+      text: '',
+      categories: (labels.length ? labels : [...new Set(full.map((p) => p.category))]).map((label) => ({ label })),
+      products: full.map((p) => ({ ...p, image: pictures?.products?.[p.name] || '' })),
+    }
+  }
   const preset = PREVIEW_SETS[set] || PREVIEW_SETS.classic
-  const products = (names?.length ? names.slice(0, 6) : preset.products.map((p) => p[0])).map((name) => {
+  const products = (names?.length ? names : preset.products.map((p) => p[0])).map((name) => {
     const known = preset.products.find((p) => p[0] === name)
     return { name, price: known ? Number(known[1].replace(/[^0-9]/g, '')) : 5000, category: preset.menu[0], description: '', image: pictures?.products?.[name] || '' }
   })
@@ -180,9 +194,14 @@ function OwnProducts({ samples, onChange, disabled }) {
             </div>
           ))}
         </div>
-        {products.length < 60 && (
-          <button type="button" disabled={disabled} onClick={() => onChange({ ...samples, products: [...products, { name: '', price: '', category: cats[0]?.label || '', description: '', image: '' }] })} className="mt-2 text-sm font-medium text-emerald-700">+ Add product</button>
-        )}
+        <div className="mt-2 flex items-center justify-between gap-3">
+          {products.length < 60 ? (
+            <button type="button" disabled={disabled} onClick={() => onChange({ ...samples, products: [...products, { name: '', price: '', category: cats[0]?.label || '', description: '', image: '' }] })} className="rounded-md border border-emerald-600 px-3 py-1.5 text-sm font-medium text-emerald-700 hover:bg-emerald-50">+ Add product</button>
+          ) : (
+            <span className="text-xs text-slate-500">That's the most a template can bring.</span>
+          )}
+          <span className="text-xs text-slate-500">{products.length} of 60 products</span>
+        </div>
       </div>
     </div>
   )
@@ -501,9 +520,25 @@ function Editor() {
                 )}
 
                 <Section title="Sample products" hint="What a new shop starts with (menu, products and pictures), and what the preview shows. Merchants replace them with their own. Nothing fits? Choose “My own products” and type them in.">
-                  <select aria-label="Sample products" className={input} value={t.sampleSet} onChange={(e) => setT({ ...t, sampleSet: e.target.value, samples: e.target.value === 'custom' ? t.samples || samplesFrom(t.sampleSet, sampleNames, pics) : t.samples })}>
+                  <select aria-label="Sample products" className={input} value={t.sampleSet} onChange={(e) => setT({ ...t, sampleSet: e.target.value, samples: e.target.value === 'custom' ? t.samples || samplesFrom(t.sampleSet, sampleNames, pics, options) : t.samples })}>
                     {Object.entries(SAMPLE_SETS).map(([k, label]) => <option key={k} value={k}>{label}</option>)}
                   </select>
+                  {t.sampleSet !== 'custom' && (
+                    <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900">
+                      <p>
+                        This template brings {sampleNames.length || 'a few'} sample products. Want more, or different ones? Copy them into your own list, then add,
+                        change or remove products (up to 60, each with its own photo).
+                      </p>
+                      <button
+                        type="button"
+                        disabled={locked}
+                        onClick={() => setT({ ...t, sampleSet: 'custom', samples: samplesFrom(t.sampleSet, sampleNames, pics, options) })}
+                        className="mt-2 rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-50"
+                      >
+                        Copy these and add more products
+                      </button>
+                    </div>
+                  )}
                   {t.sampleSet === 'custom' && t.samples && <OwnProducts samples={t.samples} onChange={(samples) => setT({ ...t, samples })} disabled={locked} />}
                 </Section>
 
@@ -672,6 +707,14 @@ function Editor() {
                     </div>
                     <p className="text-xs text-slate-500">For example a restaurant: "Add to order" and "Order now".</p>
                   </Section>
+
+                  <div className="rounded-lg border border-slate-200 bg-white p-3 text-xs text-slate-600">
+                    The products themselves (how many, names, prices, photos) are set in{' '}
+                    <button type="button" onClick={() => setTab('details')} className="font-semibold text-emerald-700 underline">
+                      Details → Sample products
+                    </button>
+                    . Here you choose how the homepage shows them.
+                  </div>
 
                   <Section title="Homepage sections" hint="What a new shop's homepage starts with, top to bottom: product rows, promo banners, your story, reviews, WhatsApp. Merchants can change everything later in their builder.">
                     <SectionUploadContext.Provider value={studioUpload}>

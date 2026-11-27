@@ -6,5 +6,7 @@
 // How to make one: copy packs/spotlight, rename it, change the component,
 // and add it to this list. See TEMPLATE_STUDIO_GUIDE.md, "Template packs".
 import spotlight from './spotlight'
+import furnish from './furnish'
+import bloom from './bloom'
 
-export const PACKS = [spotlight]
+export const PACKS = [spotlight, furnish, bloom]

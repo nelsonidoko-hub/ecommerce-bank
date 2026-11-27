@@ -3,7 +3,11 @@
 // utils/sampleData.js (the pictures on sample products).
 export const PICTURE_ICONS = [
   [/backpack|school bag/i, "🎒"],
-  [/sneaker|shoe|slides|sandal/i, "👟"],
+  [/sneaker|shoe|slides|sandal|runner|court 90s|volt edge|zenith flow|street vibe|nova horizon|pulse react|street retro|aeroflex|street pro/i, "👟"],
+  [/sofa|couch/i, "🛋️"],
+  [/chair|stool/i, "🪑"],
+  [/vase/i, "🏺"],
+  [/coffee table|side table/i, "🪵"],
   [/sun hat|straw hat/i, "👒"],
   [/cap\b|hat\b/i, "🧢"],
   [/dress|gown/i, "👗"],
@@ -297,3 +301,113 @@ export const previewSet = (id, samples) => (id === 'custom' && samples?.products
 // Gadget and Atelier start with the same products as Tech and Minimal
 PREVIEW_SETS.gadget = { ...PREVIEW_SETS.tech, banner: 'Top deals today' }
 PREVIEW_SETS.atelier = { ...PREVIEW_SETS.minimal, banner: 'The new collection' }
+
+// Furnish and Bloom (from the backend's sample products)
+PREVIEW_SETS.furnish = {
+  "menu": [
+    "Chairs",
+    "Sofas"
+  ],
+  "banner": "Furniture that feels like home",
+  "products": [
+    [
+      "Modern Lounge Chair",
+      "₦59,000",
+      "Curved oak frame with a…"
+    ],
+    [
+      "Comfy Home-Office Sofa",
+      "₦245,000",
+      "Deep seats and firm…"
+    ],
+    [
+      "Arc Floor Lamp",
+      "₦48,000",
+      "Warm light that reaches…"
+    ],
+    [
+      "High Back Office Chair",
+      "₦85,000",
+      "Tall back, padded arms…"
+    ],
+    [
+      "Royal Comfort Sofa",
+      "₦320,000",
+      "Hand-finished,…"
+    ],
+    [
+      "Glass Coffee Table",
+      "₦95,000",
+      "Tempered glass top on a…"
+    ],
+    [
+      "Wooden Side Table",
+      "₦35,000",
+      "Small, sturdy and just…"
+    ],
+    [
+      "Metal Wall Clock",
+      "₦18,000",
+      "Brushed metal with…"
+    ],
+    [
+      "Ceramic Table Vase",
+      "₦12,000",
+      "Matte glaze, made by…"
+    ]
+  ]
+}
+PREVIEW_SETS.bloom = {
+  "menu": [
+    "Running",
+    "Lifestyle"
+  ],
+  "banner": "Step into style",
+  "products": [
+    [
+      "AirFlex Runner",
+      "₦45,000",
+      "Lightweight runners…"
+    ],
+    [
+      "Urban Street Pro",
+      "₦52,000",
+      "Minimal everyday…"
+    ],
+    [
+      "Classic Court 90s",
+      "₦39,000",
+      "Retro tennis-court…"
+    ],
+    [
+      "Volt Edge",
+      "₦62,000",
+      "Bold details and…"
+    ],
+    [
+      "Zenith Flow",
+      "₦68,000",
+      "Soft knit upper with a…"
+    ],
+    [
+      "Street Vibe Low",
+      "₦35,000",
+      "A timeless low-top that…"
+    ],
+    [
+      "Nova Horizon",
+      "₦58,000",
+      "High-top in suede and…"
+    ],
+    [
+      "Pulse React",
+      "₦52,000",
+      "Springy cushioning for…"
+    ],
+    [
+      "Core Street Retro",
+      "₦44,000",
+      "Old-school basketball…"
+    ]
+  ]
+}
