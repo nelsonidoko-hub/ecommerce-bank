@@ -80,3 +80,7 @@
 .density-airy .sf-grid { row-gap: 3rem; }
 /* In banded shops the band is the background, not the section's own grey */
 .sf-bands .sf-block > .bg-gray-50 { background-color: transparent; }
+
+/* Demo shops have a bar at the bottom: floating buttons sit above it */
+.has-demo-bar .sf-float { bottom: 6.5rem; }
+@media (min-width: 640px) { .has-demo-bar .sf-float { bottom: 4.5rem; } }

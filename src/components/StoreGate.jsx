@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Cog6ToothIcon } from '@heroicons/react/24/outline'
 import { useStoreStatus } from '../hooks/useStoreStatus'
@@ -18,13 +19,26 @@ const OWNER_MESSAGES = {
 function StoreGate({ children }) {
   const status = useStoreStatus()
   const { pathname } = useLocation()
+  const isDemo = Boolean(status?.isDemo)
+  // Buttons floating at the bottom (WhatsApp) move up above the demo bar
+  useEffect(() => {
+    document.documentElement.classList.toggle('has-demo-bar', isDemo)
+  }, [isDemo])
 
   // A template demo: the real shop, plus a way to start one like it
   if (status?.isDemo) {
     const template = TEMPLATES[status.demoTemplate]
     return (
       <>
-        <div className="sticky top-0 z-[60] flex flex-wrap items-center justify-center gap-x-3 gap-y-1 bg-gray-900 px-4 py-2 text-center text-sm text-white">
+        {children}
+        {/* Room at the very bottom so the bar never hides the footer */}
+        <div className="h-24 sm:h-14" aria-hidden="true" />
+        {/* At the bottom, so it never covers the shop's own menu bar at the top.
+            Below drawers and pop-ups (z-40), above the page. */}
+        <div
+          className="fixed inset-x-0 bottom-0 z-40 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 bg-gray-900/95 px-4 py-2 text-center text-sm text-white shadow-[0_-4px_12px_rgba(0,0,0,0.15)]"
+          style={{ paddingBottom: 'calc(0.5rem + env(safe-area-inset-bottom))' }}
+        >
           <span>
             You're viewing the <b>{template?.label || String(status.demoTemplate || 'template').replace(/^./, (c) => c.toUpperCase())}</b> demo. Orders are switched off.
           </span>
@@ -35,7 +49,6 @@ function StoreGate({ children }) {
             Start your shop with this design
           </a>
         </div>
-        {children}
       </>
     )
   }

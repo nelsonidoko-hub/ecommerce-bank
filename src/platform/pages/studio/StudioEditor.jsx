@@ -213,9 +213,9 @@ function PhotoSlot({ label, url, onChange, disabled }) {
         <p className="truncate text-sm font-medium text-slate-800">{label}</p>
         <p className={`text-xs ${error ? 'text-red-600' : 'text-slate-400'}`}>{error || (url ? 'Photo added' : 'Drawn picture for now')}</p>
       </div>
-      <label className={`shrink-0 cursor-pointer rounded-md border border-slate-300 px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 ${disabled || busy ? 'pointer-events-none opacity-50' : ''}`}>
+      <label className={`relative shrink-0 cursor-pointer rounded-md border border-slate-300 px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-50 ${disabled || busy ? 'pointer-events-none opacity-50' : ''}`}>
         {busy ? 'Uploading…' : url ? 'Change' : 'Upload'}
-        <input type="file" accept="image/*" className="sr-only" disabled={disabled || busy} onChange={pick} />
+        <input type="file" accept="image/*" className="hidden" disabled={disabled || busy} onChange={pick} />
       </label>
       {url && !disabled && (
         <button type="button" onClick={() => onChange('')} className="shrink-0 text-xs text-slate-500 underline">Remove</button>
@@ -511,7 +511,7 @@ function Editor() {
                   title="Photos (optional)"
                   hint="Real photos make the template easier to imagine. New shops and the demo shop start with them; anything without a photo gets a drawn picture. Use your own photos or free-licence stock (e.g. Unsplash, Pexels), never pictures copied from other shops or Google. Up to 5 MB each."
                 >
-                  <div className="grid gap-2 sm:grid-cols-2">
+                  <div className="grid gap-2">
                     <PhotoSlot label="Top banner (big picture)" url={pics.hero} onChange={(u) => setPicture('hero', u)} disabled={locked} />
                     <PhotoSlot label="Middle banner" url={pics.banner} onChange={(u) => setPicture('banner', u)} disabled={locked} />
                     <PhotoSlot label="Featured picture" url={pics.featured} onChange={(u) => setPicture('featured', u)} disabled={locked} />
